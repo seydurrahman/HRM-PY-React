@@ -93,6 +93,7 @@ const EmployeeCreate = () => {
       nominee_division: "",
       nominee_district: "",
       nominee_upazila: "",
+      nominee_union: "",
       nominee_post_code: "",
       nominee_village: "",
       nominee_village_bangla: "",
@@ -103,6 +104,7 @@ const EmployeeCreate = () => {
       division: "",
       district: "",
       upazila: "",
+      union: "",
       post_code: "",
       address: "",
       village: "",
@@ -223,67 +225,72 @@ const EmployeeCreate = () => {
 
   // Division to union
   useEffect(() => {
-  fetch("https://bdapi.vercel.app/api/v.1/division")
-    .then(res => res.json())
-    .then(data => setBdDivisions(data.data))
-    .catch(err => console.error("Division Load Error:", err));
-}, []);
+    fetch("https://bdapi.vercel.app/api/v.1/division")
+      .then((res) => res.json())
+      .then((data) => setBdDivisions(data.data))
+      .catch((err) => console.error("Division Load Error:", err));
+  }, []);
 
   useEffect(() => {
-  if (!form.nominee_division) {
-    setBdDistricts([]);
-    return;
-  }
+    if (!form.nominee_division) {
+      setBdDistricts([]);
+      return;
+    }
 
-  fetch(`https://bdapi.vercel.app/api/v.1/district?division_id=${form.nominee_division}`)
-    .then(res => res.json())
-    .then(data => setBdDistricts(data.data))
-    .catch(err => console.error("District Load Error:", err));
+    fetch(
+      `https://bdapi.vercel.app/api/v.1/district?division_id=${form.nominee_division}`
+    )
+      .then((res) => res.json())
+      .then((data) => setBdDistricts(data.data))
+      .catch((err) => console.error("District Load Error:", err));
 
-  // RESET CHILD FIELDS
-  setForm(prev => ({
-    ...prev,
-    nominee_district: "",
-    nominee_upazila: "",
-    nominee_union: ""
-  }));
-}, [form.nominee_division]);
-
-  useEffect(() => {
-  if (!form.nominee_district) {
-    setBdUpazilas([]);
-    return;
-  }
-
-  fetch(`https://bdapi.vercel.app/api/v.1/upazila?district_id=${form.nominee_district}`)
-    .then(res => res.json())
-    .then(data => setBdUpazilas(data.data))
-    .catch(err => console.error("Upazila Load Error:", err));
-
-  setForm(prev => ({
-    ...prev,
-    nominee_upazila: "",
-    nominee_union: ""
-  }));
-}, [form.nominee_district]);
+    // RESET CHILD FIELDS
+    setForm((prev) => ({
+      ...prev,
+      nominee_district: "",
+      nominee_upazila: "",
+      nominee_union: "",
+    }));
+  }, [form.nominee_division]);
 
   useEffect(() => {
-  if (!form.nominee_upazila) {
-    setBdUnions([]);
-    return;
-  }
+    if (!form.nominee_district) {
+      setBdUpazilas([]);
+      return;
+    }
 
-  fetch(`https://bdapi.vercel.app/api/v.1/union?upazila_id=${form.nominee_upazila}`)
-    .then(res => res.json())
-    .then(data => setBdUnions(data.data))
-    .catch(err => console.error("Union Load Error:", err));
+    fetch(
+      `https://bdapi.vercel.app/api/v.1/upazila?district_id=${form.nominee_district}`
+    )
+      .then((res) => res.json())
+      .then((data) => setBdUpazilas(data.data))
+      .catch((err) => console.error("Upazila Load Error:", err));
 
-  setForm(prev => ({
-    ...prev,
-    nominee_union: ""
-  }));
-}, [form.nominee_upazila]);
+    setForm((prev) => ({
+      ...prev,
+      nominee_upazila: "",
+      nominee_union: "",
+    }));
+  }, [form.nominee_district]);
 
+  useEffect(() => {
+    if (!form.nominee_upazila) {
+      setBdUnions([]);
+      return;
+    }
+
+    fetch(
+      `https://bdapi.vercel.app/api/v.1/union?upazila_id=${form.nominee_upazila}`
+    )
+      .then((res) => res.json())
+      .then((data) => setBdUnions(data.data))
+      .catch((err) => console.error("Union Load Error:", err));
+
+    setForm((prev) => ({
+      ...prev,
+      nominee_union: "",
+    }));
+  }, [form.nominee_upazila]);
 
   // Auto-generate employee code
   useEffect(() => {
@@ -821,24 +828,6 @@ const EmployeeCreate = () => {
                   ))}
                 </select>
               </div>
-
-              {/* Grade */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Grade</label>
-                <select
-                  name="grade"
-                  className="border border-gray-300 p-2 rounded w-full"
-                  value={form.grade}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Grade</option>
-                  {grades.map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
           )}
 
@@ -1289,6 +1278,299 @@ const EmployeeCreate = () => {
                   ))}
                 </select>
               </div>
+              {/* Nominee Post Code */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Nominee Post Code
+                </label>
+                <input
+                  name="nominee_post_code"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Nominee Post Code"
+                  value={form.nominee_post_code}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Nominee Village */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Nominee Village
+                </label>
+                <input
+                  name="nominee_village"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Nominee Village"
+                  value={form.nominee_village}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Nominee Village Bangla */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  নমিনির গ্রাম-বাংলায়
+                </label>
+                <input
+                  name="nominee_village_bangla"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="নমিনির গ্রাম"
+                  value={form.nominee_village_bangla}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Emg_Contact Name */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Emergency Contact Name
+                </label>
+                <input
+                  name="emg_contact_name"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Emergency Contact Name"
+                  value={form.emg_contact_name}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Emg_Contact Phone */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Emergency Contact Phone
+                </label>
+                <input
+                  name="emg_contact_phone"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Emergency Contact Phone"
+                  value={form.emg_contact_phone}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Emg_Contact Relation */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Emergency Contact Relation
+                </label>
+                <input
+                  name="emg_contact_relation"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Emergency Contact Relation"
+                  value={form.emg_contact_relation}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Country */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Country
+                </label>
+                <select
+                  name="country"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.country}
+                  onChange={handleChange}
+                  defuldtValue="Bangladesh"
+                >
+                  <option value="">Select Nationality</option>
+                  {countries.map((c, index) => (
+                    <option key={index} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Division */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Division
+                </label>
+                <select
+                  name="division"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.division}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Division</option>
+                  {bdDivisions.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* District */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  District
+                </label>
+                <select
+                  name="district"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.district}
+                  onChange={handleChange}
+                >
+                  <option value="">Select District</option>
+                  {bdDistricts.map((dist) => (
+                    <option key={dist.id} value={dist.id}>
+                      {dist.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Upazila */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Upazila
+                </label>
+                <select
+                  name="upazila"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.upazila}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Upazila</option>
+                  {bdUpazilas.map((upa) => (
+                    <option key={upa.id} value={upa.id}>
+                      {upa.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Union */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Union</label>
+                <select
+                  name="union"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.union}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Union</option>
+                  {bdUnions.map((uni) => (
+                    <option key={uni.id} value={uni.id}>
+                      {uni.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Post Code */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Post Code
+                </label>
+                <input
+                  name="post_code"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Post Code"
+                  value={form.post_code}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Village */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Village
+                </label>
+                <input
+                  name="village"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Village"
+                  value={form.village}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Village Bangla */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  গ্রাম-বাংলায়
+                </label>
+                <input
+                  name="village_bangla"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="গ্রাম-বাংলায়"
+                  value={form.village_bangla}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Local Auth Name */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Local Authority Name
+                </label>
+                <input
+                  name="local_auth_name"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Local Authority Name"
+                  value={form.local_auth_name}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Local Auth Mobile */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Local Authority Mobile
+                </label>
+                <input
+                  name="local_auth_mobile"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Local Authority Mobile"
+                  value={form.local_auth_mobile}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Local Auth Relation */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Local Authority Relation
+                </label>
+                <input
+                  name="local_auth_relation"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Local Authority Relation"
+                  value={form.local_auth_relation}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Identity */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Identity Mark
+                </label>
+                <input
+                  name="identity_mark"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Identity Mark"
+                  value={form.identity_mark}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Weight */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Weight (kg)
+                </label>
+                <input
+                  name="weight"
+                  type="number"
+                  step="0.01"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Weight in kg"
+                  value={form.weight}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Height */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Height (cm)
+                </label>
+                <input
+                  name="height"
+                  type="number"
+                  step="0.01"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Height in cm"
+                  value={form.height}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
           )}
 
@@ -1327,9 +1609,26 @@ const EmployeeCreate = () => {
                   <option value="PT">Part Time</option>
                 </select>
               </div>
+              {/* Grade */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Grade</label>
+                <select
+                  name="grade"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.grade}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Grade</option>
+                  {grades.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {/* Is Active */}
-              <div className="col-span-3 mt-4">
+              {/* <div className="col-span-3 mt-4">
                 <label className="flex items-center gap-2 p-2 border border-gray-300 rounded w-fit">
                   <input
                     type="checkbox"
@@ -1340,7 +1639,8 @@ const EmployeeCreate = () => {
                   />
                   <span className="text-sm font-medium">Active Employee</span>
                 </label>
-              </div>
+              </div> */}
+
             </div>
           )}
 

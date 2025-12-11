@@ -1,10 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django_countries.fields import CountryField
+from .models import Employee
 from settings_app.models import (
     EmployeeType,
     EmploymentType,
-    Designation,
     Group,
     Bank,
 )
@@ -18,7 +18,6 @@ class Employee(models.Model):
     last_name = models.CharField(max_length=50, blank=True)
     full_name_bangla = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=30, blank=True)
-    join_date = models.DateField()
     # Unit -organization/unit
     # Division - organization/division
     # Department - organization/department
@@ -27,7 +26,6 @@ class Employee(models.Model):
     # Floor - organization/floor
     # Line - organization/line
     # Designation - settings_app/designation
-    # Grade - settings_app/grade
 
     # Basic
     date_of_birth = models.DateField(null=True, blank=True)
@@ -54,9 +52,10 @@ class Employee(models.Model):
     nominee_division = models.CharField(max_length=50, blank=True)
     nominee_district = models.CharField(max_length=50, blank=True)
     nominee_upazila = models.CharField(max_length=50, blank=True)
+    nominee_union = models.CharField(max_length=50, blank=True)
     nominee_post_code = models.CharField(max_length=20, blank=True)
-    nominee_village = models.TextField(blank=True)
-    nominee_village_bangla = models.TextField(blank=True)
+    nominee_village = models.CharField(max_length=100, blank=True)
+    nominee_village_bangla = models.CharField(max_length=100, blank=True)
     emg_contact_name = models.CharField(max_length=100, blank=True)
     emg_contact_phone = models.CharField(max_length=30, blank=True)
     emg_contact_relation = models.CharField(max_length=50, blank=True)
@@ -64,6 +63,7 @@ class Employee(models.Model):
     division = models.CharField(max_length=50, blank=True)
     district = models.CharField(max_length=50, blank=True)
     upazila = models.CharField(max_length=50, blank=True)
+    union = models.CharField(max_length=50, blank=True)
     post_code = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
     village = models.TextField(blank=True)
@@ -75,19 +75,34 @@ class Employee(models.Model):
     weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
-
-
+    # Official
     employee_type = models.CharField(
         max_length=3, choices=EmployeeType.choices, default=EmployeeType.PERMANENT
     )
     employment_type = models.CharField(
         max_length=2, choices=EmploymentType.choices, default=EmploymentType.FULL_TIME
     )
-    designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, null=True)
-    documents = models.FileField(upload_to='employee_docs/', null=True, blank=True)
     group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)
-
+    # Grade - settings_app/grade
+    device_id = models.CharField(max_length=100, blank=True)
+    join_date = models.DateField()
     confirm_date = models.DateField(null=True, blank=True)
+    reporting_to = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportees')
+    disburse_type = models.CharField(max_length=50, blank=True)
+    mfs_number = models.CharField(max_length=100, blank=True)
+    shift=models.CharField(max_length=100, blank=True)
+    weekends=models.CharField(max_length=100, blank=True)
+    office_email = models.EmailField(blank=True)
+    office_mobile = models.CharField(max_length=30, blank=True)
+    work_location = models.CharField(max_length=200, blank=True)
+    OT_eligibility = models.BooleanField(default=False)
+    software_user = models.BooleanField(default=False)
+    emp_panel_user = models.BooleanField(default=False)
+    bgmea_ID = models.CharField(max_length=100, blank=True)
+    bkmea_ID = models.CharField(max_length=100, blank=True)
+    transport_allowance = models.BooleanField(default=False)
+    documents = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+
     probation_end_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
