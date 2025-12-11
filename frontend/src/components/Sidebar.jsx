@@ -1,0 +1,224 @@
+import { NavLink } from "react-router-dom";
+import { getUserRole } from "../lib/auth";
+import { useEffect, useState } from "react";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
+
+const Sidebar = () => {
+  const [role, setRole] = useState(null);
+  const [openMenus, setOpenMenus] = useState({});
+
+  useEffect(() => {
+    const r = getUserRole();
+    setRole(r);
+  }, []);
+
+  if (role === null) return null;
+
+  const menu = [
+    {
+      label: "Dashboard",
+      roles: ["Admin", "HR", "Employee"],
+      children: [
+        { label: "Main Dashboard", path: "/dashboard" },
+        {
+          label: "HR Analytics",
+          path: "/dashboard/hr",
+          roles: ["Admin", "HR"],
+        },
+      ],
+    },
+
+    {
+      label: "Employee Management",
+      roles: ["Admin", "HR"],
+      children: [
+        { label: "Add Employee", path: "/employees" },
+        { label: "Attendance", path: "/attendance" },
+        { label: "Manual Attendance", path: "/attendance/manual" },
+        { label: "Bulk Upload", path: "/attendance/bulk" },
+        { label: "Job Card", path: "/attendance/jobcard" },
+        { label: "OT History", path: "/attendance/ot" },
+      ],
+    },
+    {
+      label: "Leave Management",
+      roles: ["Admin", "HR", "Employee"],
+      children: [
+        { label: "Apply Leave", path: "/leave/apply" },
+        { label: "Leave Balances", path: "/leave/balance" },
+        { label: "Leave History", path: "/leave/history" },
+        {
+          label: "Leave Approval",
+          path: "/leave/approval",
+          roles: ["Admin", "HR"],
+        },
+        {
+          label: "Leave Encashment",
+          path: "/leave/encash",
+          roles: ["Admin", "HR"],
+        },
+      ],
+    },
+    {
+      label: "Salary & Payroll",
+      roles: ["Admin", "HR"],
+      children: [
+        {
+          label: "Earnings & Deductions",
+          path: "/payroll/earnings-deductions",
+        },
+        { label: "Generate Salary Slips", path: "/payroll/generate" },
+        { label: "Salary Sheet", path: "/payroll/salary-sheet" },
+        {
+          label: "Payslip",
+          path: "/payroll/payslip",
+          roles: ["Admin", "HR", "Employee"],
+        },
+      ],
+    },
+    {
+      label: "PF Management",
+      roles: ["Admin", "HR"],
+      children: [
+        { label: "PF Dashboard", path: "/pf/dashboard" },
+        { label: "PF Settings", path: "/pf/settings" },
+        { label: "Generate PF", path: "/pf/generate" },
+        { label: "PF Contribution List", path: "/pf/contributions" },
+        { label: "PF Withdrawal", path: "/pf/withdrawal" },
+      ],
+    },
+    {
+      label: "Admin",
+      roles: ["Admin", "HR"],
+      children: [
+        { label: "Loan Dashboard", path: "/loan/dashboard" },
+        { label: "Loan Types", path: "/loan/types" },
+        {
+          label: "Loan Request",
+          path: "/loan/request",
+          roles: ["Admin", "HR", "Employee"],
+        },
+        { label: "Loan Approval", path: "/loan/approval" },
+        { label: "Loan Disbursement", path: "/loan/disbursement" },
+        { label: "Requisitions", path: "/loan/requisitions" },
+        { label: "New Requisition", path: "/loan/requisitions/new" },
+      ],
+    },
+
+    {
+      label: "Recruitment",
+      roles: ["Admin", "HR", "Employee"],
+      children: [
+        { label: "Aplly (Public)", path: "/recruit/apply" },
+        {
+          label: "Candidates",
+          path: "/recruit/candidates",
+          roles: ["Admin", "HR"],
+        },
+        {
+          label: "Interviews",
+          path: "/recruit/interviews",
+          roles: ["Admin", "HR"],
+        },
+        { label: "Offers", path: "/recruit/offers", roles: ["Admin", "HR"] },
+      ],
+    },
+
+    {
+      label: "Organization Entry",
+      roles: ["Admin", "HR"],
+      children: [
+        { label: "Company", path: "/org/company" },
+        { label: "Unit", path: "/org/unit" },
+        { label: "Division", path: "/org/division" },
+        { label: "Department", path: "/org/department" },
+        { label: "Section", path: "/org/section" },
+        { label: "Subsection", path: "/org/subsection" },
+        { label: "Floor", path: "/org/floor" },
+        { label: "Line", path: "/org/line" },
+        { label: "Table", path: "/org/table" },
+        {label:"Designation",path:"/settings/designations"},
+        {label:"Grade",path:"/settings/grades"}
+      ],
+    },
+  ];
+
+  const toggleMenu = (label) => {
+    setOpenMenus((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
+  };
+
+  return (
+    <aside className="w-60 hidden md:flex flex-col border-r bg-white">
+      <div className="h-14 flex items-center px-4 border-b font-bold">
+        HRM Panel
+      </div>
+
+      <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+        {menu
+          .filter((item) => item.roles.includes(role))
+          .map((item, idx) => (
+            <div key={idx}>
+              {/* 🔹 If item has children (submenu) */}
+              {item.children ? (
+                <div>
+                  <button
+                    onClick={() => toggleMenu(item.label)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-100"
+                  >
+                    <span>{item.label}</span>
+
+                    {openMenus[item.label] ? (
+                      <ChevronUpIcon className="w-4 h-4" />
+                    ) : (
+                      <ChevronDownIcon className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  {openMenus[item.label] && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {item.children.map((child, cidx) => (
+                        <NavLink
+                          key={cidx}
+                          to={child.path}
+                          className={({ isActive }) =>
+                            [
+                              "block px-3 py-1 rounded-md text-sm",
+                              isActive
+                                ? "bg-slate-900 text-white"
+                                : "text-slate-700 hover:bg-slate-100",
+                            ].join(" ")
+                          }
+                        >
+                          {child.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Regular item
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    [
+                      "block px-3 py-2 rounded-md text-sm",
+                      isActive
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-700 hover:bg-slate-100",
+                    ].join(" ")
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              )}
+            </div>
+          ))}
+      </nav>
+    </aside>
+  );
+};
+
+export default Sidebar;

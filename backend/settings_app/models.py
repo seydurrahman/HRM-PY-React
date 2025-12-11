@@ -1,0 +1,61 @@
+from django.db import models
+
+class EmployeeType(models.TextChoices):
+    PERMANENT = "PER", "Permanent"
+    CONTRACT = "CON", "Contract"
+    INTERN = "INT", "Intern"
+    PART_TIME = "PT", "Part Time"
+
+class EmploymentType(models.TextChoices):
+    FULL_TIME = "FT", "Full Time"
+    PART_TIME = "PT", "Part Time"
+    CASUAL = "CS", "Casual"
+
+class Grade(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    level = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return self.name
+
+class Designation(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class Group(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Bank(models.Model):
+    name = models.CharField(max_length=150)
+    branch = models.CharField(max_length=150, blank=True)
+    routing_no = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class SalarySetting(models.Model):
+    grade = models.OneToOneField(Grade, on_delete=models.CASCADE)
+    basic = models.DecimalField(max_digits=12, decimal_places=2)
+    house_rent = models.DecimalField(max_digits=12, decimal_places=2)
+    medical = models.DecimalField(max_digits=12, decimal_places=2)
+    transport = models.DecimalField(max_digits=12, decimal_places=2)
+    others = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"{self.grade.name} salary structure"
+
+class PFSetting(models.Model):
+    is_active = models.BooleanField(default=True)
+    employee_percent = models.DecimalField(max_digits=5, decimal_places=2)   # e.g. 8.00
+    employer_percent = models.DecimalField(max_digits=5, decimal_places=2)
+
+class OTSetting(models.Model):
+    is_active = models.BooleanField(default=True)
+    rate_multiplier = models.DecimalField(max_digits=5, decimal_places=2, default=1.5)
