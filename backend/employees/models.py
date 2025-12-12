@@ -107,17 +107,78 @@ class Employee(models.Model):
     account_no = models.CharField(max_length=100, blank=True)
     account_type = models.CharField(max_length=50, blank=True)
 
+    # Job Experience
+    job_company_name = models.CharField(max_length=200, blank=True)
+    job_department = models.CharField(max_length=100, blank=True)
+    job_designation = models.CharField(max_length=100, blank=True)
+    job_start_date = models.DateField(null=True, blank=True)
+    job_end_date = models.DateField(null=True, blank=True)
+    leave_reason = models.CharField(max_length=300, blank=True)
 
-    documents = models.FileField(upload_to='employee_docs/', null=True, blank=True)
-    probation_end_date = models.DateField(null=True, blank=True)
+    # Salary Information
+    effective_date = models.DateField(null=True, blank=True)
+    salary_policy= models.CharField(max_length=200, blank=True)
+    pf_applicable = models.BooleanField(default=False)
+    late_deduction = models.BooleanField(default=False)
+    tin_number = models.CharField(max_length=100, blank=True)
+    gross_salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    basic_salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    house_rent = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    medical_allowance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    mobile_allowance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    transport_allowance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    conveyance_allowance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    other_allowance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    attendance_bonus = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    tax_deduction = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    insurance_deduction = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    stamp_deduction = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    other_deduction = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # Education
+    degree_title = models.CharField(max_length=200, blank=True)
+    major_subject = models.CharField(max_length=200, blank=True)
+    institute_name = models.CharField(max_length=200, blank=True)
+    passing_year = models.CharField(max_length=4, blank=True)
+    education_board = models.CharField(max_length=100, blank=True)
+    result = models.CharField(max_length=100, blank=True)
+
+    # Leave Policy
+    Leave_effective= models.DateField(null=True, blank=True)
+    casual_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    sick_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    earned_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    maternity_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    paternity_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    funeral_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    compensatory_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    unpaid_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+
+    # Training
+    training_name = models.CharField(max_length=100, blank=True, null=True)
+    training_institute = models.CharField(max_length=50, blank=True, null=True)
+    institute_address = models.CharField(max_length=50, blank=True, null=True)
+    training_duration = models.CharField(max_length=50, blank=True, null=True)
+    training_result = models.CharField(max_length=50, blank=True, null=True)
+    remarks = models.CharField(max_length=50, blank=True, null=True)
+
+
+    # Documents upload
+    emp_id = models.CharField(max_length=50,blank=True, null=True)
+    emp_id_docs = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+    emp_birthcertificate = models.CharField(max_length=50,blank=True, null=True)
+    emp_birthcertificate_docs = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+    nominee_id = models.CharField(max_length=50,blank=True, null=True)
+    nominee_id_docs = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+    job_exp_certificate = models.CharField(max_length=50,blank=True, null=True)
+    job_exp_certificate_docs = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+    education_certificate = models.CharField(max_length=50,blank=True, null=True)
+    education_certificate_docs = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+    training_certificate = models.CharField(max_length=50,blank=True, null=True)
+    training_certificate_docs = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+    
+    # system auto
     is_active = models.BooleanField(default=True)
-
-    bank = models.ForeignKey(Bank, on_delete=models.SET_NULL, null=True, blank=True)
-    bank_account_no = models.CharField(max_length=100, blank=True)
-
-    pf_member = models.BooleanField(default=False)
-    pf_no = models.CharField(max_length=50, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

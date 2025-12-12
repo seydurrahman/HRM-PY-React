@@ -5,12 +5,56 @@ import api from "../../lib/api";
 const EmployeeCreate = () => {
   const navigate = useNavigate();
 
-  const tabs = ["employee", "basic", "official", "salary", "documents"];
+  const tabs = [
+    "employee",
+    "basic",
+    "official",
+    "salary",
+    "leave info",
+    "job experience",
+    "education",
+    "training",
+    "documents",
+  ];
   const [activeTab, setActiveTab] = useState("employee");
 
   const [designations, setDesignations] = useState([]);
   const [grades, setGrades] = useState([]);
+
   const [employees, setEmployees] = useState([]);
+
+  const [jobExperiences, setJobExperiences] = useState([
+    {
+      job_company_name: "",
+      job_department: "",
+      job_designation: "",
+      job_start_date: "",
+      job_end_date: "",
+      leave_reason: "",
+    },
+  ]);
+
+  const [educations, setEducations] = useState([
+    {
+      degree_title: "",
+      major_subject: "",
+      institute_name: "",
+      passing_year: "",
+      education_board: "",
+      result: "",
+    },
+  ]);
+
+  const [training, setTraining] = useState([
+    {
+      training_name: "",
+      training_institute: "",
+      institute_address: "",
+      training_duration: "",
+      training_result: "",
+      remarks: "",
+    },
+  ]);
 
   const [units, setUnits] = useState([]);
   const [divisions, setDivisions] = useState([]);
@@ -144,9 +188,76 @@ const EmployeeCreate = () => {
       account_number: "",
       nid_number: "",
 
-      // others
-      passport_number: "",
-      documents: null,
+      // Job Experience
+      job_company_name: "",
+      job_department: "",
+      job_designation: "",
+      job_start_date: "",
+      job_end_date: "",
+      leave_reason: "",
+
+      // Salary
+      effective_date: "",
+      salary_policy: "",
+      pf_applicable: false,
+      late_deduction: false,
+      tin_number: "",
+      gross_salary: "",
+      basic_salary: "",
+      house_rent: "",
+      medical_allowance: "",
+      mobile_allowance: "",
+      transport_allowance: "",
+      conveyance_allowance: "",
+      other_allowance: "",
+      attendance_bonus: "",
+      tax_deduction: "",
+      insurance_deduction: "",
+      stamp_deduction: "",
+      other_deduction: "",
+
+      // Education
+      degree_title: "",
+      major_subject: "",
+      institute_name: "",
+      passing_year: "",
+      education_board: "",
+      result: "",
+
+      // Leave Info
+      leave_effective:"",
+      casual_leave: "",
+      sick_leave: "",
+      earned_leave: "",
+      maternity_leave: "",
+      paternity_leave: "",
+      funeral_leave: "",
+      compensatory_leave: "",
+      unpaid_leave: "",
+
+      // Training
+      training_name:"",
+      training_institute:"",
+      institute_address:"",
+      training_duration:"",
+      training_result:"",
+      remarks:"",
+
+      // Documents
+      emp_id:"",
+      emp_id_docs: null,
+      emp_birthcertificate:"",
+      emp_birthcertificate_docs:null,
+      nominee_id:"",
+      nominee_id_docs:null,
+      job_exp_certificate:"",
+      job_exp_certificate_docs:null,
+      education_certificate:"",
+      education_certificate_docs:null,
+      training_certificate:"",
+      training_certificate_docs:null,
+
+      // system
       is_active: true,
     };
   });
@@ -319,6 +430,82 @@ const EmployeeCreate = () => {
       .then((res) => setEmployees(res.data))
       .catch((err) => console.error("Employee fetch error:", err));
   }, []);
+
+  // Add/Remove Job Experience Entries
+  const addJobExperience = () => {
+    setJobExperiences([
+      ...jobExperiences,
+      {
+        job_company_name: "",
+        job_department: "",
+        job_designation: "",
+        job_start_date: "",
+        job_end_date: "",
+        leave_reason: "",
+      },
+    ]);
+  };
+
+  const removeJobExperience = (index) => {
+    const updated = jobExperiences.filter((_, i) => i !== index);
+    setJobExperiences(updated);
+  };
+
+  const handleJobChange = (index, e) => {
+    const updated = [...jobExperiences];
+    updated[index][e.target.name] = e.target.value;
+    setJobExperiences(updated);
+  };
+
+  // Add/Remove Education Entries
+  const addEducation = () => {
+    setEducations([
+      ...educations,
+      {
+        degree_title: "",
+        major_subject: "",
+        institute_name: "",
+        passing_year: "",
+        education_board: "",
+        result: "",
+      },
+    ]);
+  };
+  const removeEducation = (index) => {
+    const updated = educations.filter((_, i) => i !== index);
+    setEducations(updated);
+  };
+
+  const handleEducationChange = (index, e) => {
+    const updated = [...educations];
+    updated[index][e.target.name] = e.target.value;
+    setEducations(updated);
+  };
+
+  // Add/Remove Training Entries
+  const addTraining = () => {
+    setTraining([
+      ...training,
+      {
+        training_name: "",
+        training_institute: "",
+        institute_address: "",
+        training_duration: "",
+        training_result: "",
+        remarks: "",
+      },
+    ]);
+  };
+  const removeTraining = (index) => {
+    const updated = training.filter((_, i) => i !== index);
+    setTraining(updated);
+  };
+
+  const handleTrainingChange = (index, e) => {
+    const updated = [...training];
+    updated[index][e.target.name] = e.target.value;
+    setTraining(updated);
+  };
 
   // Auto-generate employee code
   useEffect(() => {
@@ -550,7 +737,7 @@ const EmployeeCreate = () => {
       <h1 className="text-xl font-semibold">Add New Employee</h1>
 
       {/* TABS */}
-      <div className="flex gap-6 border-b pb-2 text-sm">
+      <div className="flex gap-10 border-b pb-2 text-sm">
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -2025,6 +2212,72 @@ const EmployeeCreate = () => {
           {/* SALARY TAB */}
           {activeTab === "salary" && (
             <div className="grid grid-cols-3 gap-4">
+              {/* Effective Date */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Effective Date
+                </label>
+                <input
+                  type="date"
+                  name="effective_date"
+                  value={form.effective_date}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
+              {/* Salary Policy */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Salary Policy
+                </label>
+                <input
+                  name="salary_policy"
+                  value={form.salary_policy}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Salary Policy"
+                />
+              </div>
+              {/* Late Deduction */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Late Deduction
+                </label>
+                <input
+                  name="late_deduction"
+                  value={form.late_deduction}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Late Deduction"
+                />
+              </div>
+              {/* Tin Number */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Tin Number
+                </label>
+                <input
+                  name="tin_number"
+                  value={form.tin_number}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Tin Number"
+                />
+              </div>
+              {/* Gross Salary */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Gross Salary
+                </label>
+                <input
+                  name="gross_salary"
+                  value={form.gross_salary}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Gross Salary"
+                />
+              </div>
+
               {/* Basic Salary */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -2032,61 +2285,649 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="basic_salary"
-                  type="number"
-                  step="0.01"
-                  className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="0.00"
                   value={form.basic_salary}
                   onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Basic Salary"
                 />
               </div>
 
-              {/* Bank Name */}
+              {/* House Rent */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Bank Name
+                  House Rent
                 </label>
                 <input
-                  name="bank_name"
-                  className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Bank Name"
-                  value={form.bank_name}
+                  name="house_rent"
+                  value={form.house_rent}
                   onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="House Rent"
                 />
               </div>
 
-              {/* Account Number */}
+              {/* Medical Allowance */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Account Number
+                  Medical Allowance
                 </label>
                 <input
-                  name="account_number"
-                  className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Account Number"
-                  value={form.account_number}
+                  name="medical_allowance"
+                  value={form.medical_allowance}
                   onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Medical Allowance"
+                />
+              </div>
+
+              {/* Mobile Allowance */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Mobile Allowance
+                </label>
+                <input
+                  name="mobile_allowance"
+                  value={form.mobile_allowance}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Mobile Allowance"
+                />
+              </div>
+
+              {/* Transport Allowance */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Transport Allowance
+                </label>
+                <input
+                  name="transport_allowance"
+                  value={form.transport_allowance}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Transport Allowance"
+                />
+              </div>
+
+              {/* Conveyance Allowance */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Conveyance Allowance
+                </label>
+                <input
+                  name="conveyance_allowance"
+                  value={form.conveyance_allowance}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Conveyance Allowance"
+                />
+              </div>
+
+              {/* Other Allowances */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Other Allowances
+                </label>
+                <input
+                  name="other_allowances"
+                  value={form.other_allowances}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Other Allowances"
+                />
+              </div>
+
+              {/* Attendance Bonus */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Attendance Bonus
+                </label>
+                <input
+                  name="attendance_bonus"
+                  value={form.attendance_bonus}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Attendance Bonus"
+                />
+              </div>
+
+              {/* Tax deduction */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Tax deduction
+                </label>
+                <input
+                  name="tax_deduction"
+                  value={form.tax_deduction}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Tax deduction"
+                />
+              </div>
+
+              {/* insurance deduction */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Insurance deduction
+                </label>
+                <input
+                  name="insurance_deduction"
+                  value={form.insurance_deduction}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Insurance deduction"
+                />
+              </div>
+
+              {/* stamp deduction */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Stamp deduction
+                </label>
+                <input
+                  name="stamp_deduction"
+                  value={form.stamp_deduction}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Stamp deduction"
+                />
+              </div>
+
+              {/* Other deductions */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Other deductions
+                </label>
+                <input
+                  name="other_deductions"
+                  value={form.other_deductions}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Other deductions"
                 />
               </div>
             </div>
           )}
 
+           {/* Leave Info*/}
+           {activeTab === "leave info" && (
+            <div className="grid grid-cols-3 gap-4">
+              {/* Leave Effective Date */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Leave Effective
+                </label>
+                <input
+                  type="date"
+                  name="leave_effective"
+                  value={form.leave_effective}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
+              {/* Casual Leave */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Casual Leave
+                </label>
+                <input
+                  name="casual_leave"
+                  value={form.casual_leave}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Casual Leave"
+                />
+              </div>
+              {/* Sick Leave */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Sick Leave
+                </label>
+                <input
+                  name="sick_leave"
+                  value={form.sick_leave}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Sick Leave"
+                />
+              </div>
+              {/* Earned Leave */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Earned Leave
+                </label>
+                <input
+                  name="earned_leave"
+                  value={form.earned_leave}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Earned Leave"
+                />
+              </div>
+              {/* Maternity Leave */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Maternity Leave
+                </label>
+                <input
+                  name="maternity_leave"
+                  value={form.maternity_leave}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Maternity Leave"
+                />
+              </div>
+
+              {/* Paternity Leave */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                   Paternity Leave
+                </label>
+                <input
+                  name="paternity_leave"
+                  value={form.paternity_leave}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder=" Paternity Leave"
+                />
+              </div>
+
+              {/* Funeral Leave */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Funeral Leave
+                </label>
+                <input
+                  name="funeral_leave"
+                  value={form.funeral_leave}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Funeral Leave"
+                />
+              </div>
+
+              {/* Compensatory Leave */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Compensatory Leave
+                </label>
+                <input
+                  name="compensatory_leave"
+                  value={form.compensatory_leave}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Compensatory Leave"
+                />
+              </div>
+
+              {/* Unpaid Leave */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Unpaid Leave
+                </label>
+                <input
+                  name="unpaid_leave"
+                  value={form.unpaid_leave}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="Unpaid Leave"
+                />
+              </div>
+
+            </div>
+          )}
+
+          {/* JOB EXPERIENCE TAB */}
+          {activeTab === "job experience" && (
+            <div className="space-y-6">
+              {jobExperiences.map((exp, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-3 gap-4 p-4 relative"
+                >
+                  {/* --- Buttons --- */}
+                  {/* Remove button (only hide for first when only one item exists) */}
+                  {jobExperiences.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeJobExperience(index)}
+                      className="absolute top-2 right-12 bg-red-500 text-white px-2 rounded"
+                    >
+                      -
+                    </button>
+                  )}
+
+                  {/* Add Button (only for last item) */}
+                  {index === jobExperiences.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={addJobExperience}
+                      className="absolute top-2 right-2 bg-green-500 text-white px-2 rounded"
+                    >
+                      +
+                    </button>
+                  )}
+
+                  {/* --- Fields --- */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Company Name
+                    </label>
+                    <input
+                      name="job_company_name"
+                      value={exp.job_company_name}
+                      onChange={(e) => handleJobChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Company Name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Department
+                    </label>
+                    <input
+                      name="job_department"
+                      value={exp.job_department}
+                      onChange={(e) => handleJobChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Department"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Designation
+                    </label>
+                    <input
+                      name="job_designation"
+                      value={exp.job_designation}
+                      onChange={(e) => handleJobChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Designation"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      name="job_start_date"
+                      value={exp.job_start_date}
+                      onChange={(e) => handleJobChange(index, e)}
+                      className="border p-2 rounded w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      name="job_end_date"
+                      value={exp.job_end_date}
+                      onChange={(e) => handleJobChange(index, e)}
+                      className="border p-2 rounded w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Reason for Leaving
+                    </label>
+                    <input
+                      name="leave_reason"
+                      value={exp.leave_reason}
+                      onChange={(e) => handleJobChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Reason for Leaving"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* EDUCATION TAB */}
+          {activeTab === "education" && (
+            <div className="space-y-6">
+              {educations.map((edu, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-3 gap-4 p-4 relative"
+                >
+                  {/* REMOVE button (shown only if more than 1 education) */}
+                  {educations.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeEducation(index)}
+                      className="absolute top-2 right-12 bg-red-500 text-white px-2 rounded"
+                    >
+                      -
+                    </button>
+                  )}
+
+                  {/* ADD button only on last block */}
+                  {index === educations.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={addEducation}
+                      className="absolute top-2 right-2 bg-green-500 text-white px-2 rounded"
+                    >
+                      +
+                    </button>
+                  )}
+
+                  {/* --- Fields --- */}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Degree Title
+                    </label>
+                    <input
+                      name="degree_title"
+                      value={edu.degree_title}
+                      onChange={(e) => handleEducationChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Degree Title"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Major Subject
+                    </label>
+                    <input
+                      name="major_subject"
+                      value={edu.major_subject}
+                      onChange={(e) => handleEducationChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Major Subject"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Institute Name
+                    </label>
+                    <input
+                      name="institute_name"
+                      value={edu.institute_name}
+                      onChange={(e) => handleEducationChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Institute Name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Passing Year
+                    </label>
+                    <input
+                      name="passing_year"
+                      value={edu.passing_year}
+                      onChange={(e) => handleEducationChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Passing Year"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Education Board
+                    </label>
+                    <input
+                      name="education_board"
+                      value={edu.education_board}
+                      onChange={(e) => handleEducationChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Education Board"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Result
+                    </label>
+                    <input
+                      name="result"
+                      value={edu.result}
+                      onChange={(e) => handleEducationChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Result"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          
+         
+        
+          {/* Training Tab */}
+           {activeTab === "training" && (
+            <div className="space-y-6">
+              {training.map((edu, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-3 gap-4 p-4 relative"
+                >
+                  {/* REMOVE button (shown only if more than 1 training) */}
+                  {training.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeTraining(index)}
+                      className="absolute top-2 right-12 bg-red-500 text-white px-2 rounded"
+                    >
+                      -
+                    </button>
+                  )}
+
+                  {/* ADD button only on last block */}
+                  {index === training.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={addTraining}
+                      className="absolute top-2 right-2 bg-green-500 text-white px-2 rounded"
+                    >
+                      +
+                    </button>
+                  )}
+
+                  {/* --- Fields --- */}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Training Name
+                    </label>
+                    <input
+                      name="training_name"
+                      value={edu.training_name}
+                      onChange={(e) => handleTrainingChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Training Name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Institute
+                    </label>
+                    <input
+                      name="training_institute"
+                      value={edu.training_institute}
+                      onChange={(e) => handleTrainingChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Institute"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Institute Address
+                    </label>
+                    <input
+                      name="institute_address"
+                      value={edu.institute_address}
+                      onChange={(e) => handleTrainingChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Institute Address"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                     Training Duration
+                    </label>
+                    <input
+                      name="training_duration"
+                      value={edu.training_duration}
+                      onChange={(e) => handleTrainingChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Training Duration"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Result
+                    </label>
+                    <input
+                      name="training_result"
+                      value={edu.training_result}
+                      onChange={(e) => handleTrainingChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Result"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Remarks
+                    </label>
+                    <input
+                      name="remarks"
+                      value={edu.remarks}
+                      onChange={(e) => handleTrainingChange(index, e)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Remarks"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+
+
+
           {/* DOCUMENTS TAB */}
           {activeTab === "documents" && (
             <div className="grid grid-cols-3 gap-4">
-              {/* NID Number */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  NID Number
-                </label>
-                <input
-                  name="nid_number"
-                  className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="NID Number"
-                  value={form.nid_number}
-                  onChange={handleChange}
-                />
-              </div>
+              
 
               {/* Passport Number */}
               <div>
