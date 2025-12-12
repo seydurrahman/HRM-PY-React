@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django_countries.fields import CountryField
-from .models import Employee
 from settings_app.models import (
     EmployeeType,
     EmploymentType,
@@ -82,12 +81,12 @@ class Employee(models.Model):
     employment_type = models.CharField(
         max_length=2, choices=EmploymentType.choices, default=EmploymentType.FULL_TIME
     )
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True)
+    group_name = models.CharField(max_length=100, blank=True)  # settings_app/group
     # Grade - settings_app/grade
     device_id = models.CharField(max_length=100, blank=True)
     join_date = models.DateField()
     confirm_date = models.DateField(null=True, blank=True)
-    reporting_to = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportees')
+    reporting_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='reportees')
     disburse_type = models.CharField(max_length=50, blank=True)
     mfs_number = models.CharField(max_length=100, blank=True)
     shift=models.CharField(max_length=100, blank=True)
@@ -100,9 +99,15 @@ class Employee(models.Model):
     emp_panel_user = models.BooleanField(default=False)
     bgmea_ID = models.CharField(max_length=100, blank=True)
     bkmea_ID = models.CharField(max_length=100, blank=True)
-    transport_allowance = models.BooleanField(default=False)
-    documents = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+    transport = models.BooleanField(default=False)
+    food_allowance = models.CharField(max_length=100, blank=True)
+    bank_name = models.CharField(max_length=100, blank=True)
+    branch_name = models.CharField(max_length=100, blank=True)
+    account_no = models.CharField(max_length=100, blank=True)
+    account_type = models.CharField(max_length=50, blank=True)
+    
 
+    documents = models.FileField(upload_to='employee_docs/', null=True, blank=True)
     probation_end_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 

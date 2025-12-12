@@ -119,12 +119,32 @@ const EmployeeCreate = () => {
       // Official
       employee_type: "PER",
       employment_type: "FT",
-      email: "",
+      group_name: "",
+      grade: "",
+      device_id: "",
       join_date: "",
+      confirm_date: "",
+      reporting_to: "",
+      disburse_type: "",
+      mfs_number: "",
+      shift: "",
+      weekends: "",
+      office_email: "",
+      emp_panel_user: "",
+      bgmea_ID: "",
+      bkmea_ID: "",
+      transport: false,
+      food_allowance: "",
+      bank_name: "",
+      branch_name: "",
+      account_no: "",
+      account_type: "",
       basic_salary: "",
       bank_name: "",
       account_number: "",
       nid_number: "",
+
+      // others
       passport_number: "",
       documents: null,
       is_active: true,
@@ -302,7 +322,7 @@ const EmployeeCreate = () => {
           return;
         }
 
-        const response = await api.get("/employees/next-code/");
+        const response = await api.get("/employees-next-code/");
         console.log("API Response:", response.data);
 
         if (response.data && response.data.next_code) {
@@ -373,7 +393,7 @@ const EmployeeCreate = () => {
   const regenerateCode = async () => {
     setIsLoadingCode(true);
     try {
-      const res = await api.get("/employees/next-code/");
+      const res = await api.get("/employees-next-code/");
       if (res.data.next_code) {
         setForm((prev) => ({ ...prev, code: res.data.next_code }));
         setCodeError("");
@@ -669,9 +689,12 @@ const EmployeeCreate = () => {
                   name="phone"
                   type="tel"
                   className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Phone"
                   value={form.phone}
                   onChange={handleChange}
+                  pattern="01[0-9]{9}"
+                  maxLength="11"
+                  placeholder="01XXXXXXXXX"
+                  title="Mobile number must be 11 digits and start with 01"
                 />
               </div>
 
@@ -1510,9 +1533,13 @@ const EmployeeCreate = () => {
                 <input
                   name="local_auth_mobile"
                   className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Local Authority Mobile"
                   value={form.local_auth_mobile}
                   onChange={handleChange}
+                  type="tel"
+                  pattern="01[0-9]{9}"
+                  maxLength="11"
+                  placeholder="01XXXXXXXXX"
+                  title="Mobile number must be 11 digits and start with 01"
                 />
               </div>
               {/* Local Auth Relation */}
@@ -1609,6 +1636,24 @@ const EmployeeCreate = () => {
                   <option value="PT">Part Time</option>
                 </select>
               </div>
+              {/* Group */}
+              {/* <div>
+                <label className="block text-sm font-medium mb-1">Group</label>
+                <select
+                  name="group_name"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.group_name}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Group</option>
+                  {group_name.map((g) => (
+                    <option key={g.id} value={g.name}>
+                      {g.name}
+                    </option>
+                  ))}
+                </select>
+              </div> */}
+
               {/* Grade */}
               <div>
                 <label className="block text-sm font-medium mb-1">Grade</label>
@@ -1627,6 +1672,328 @@ const EmployeeCreate = () => {
                 </select>
               </div>
 
+              {/* Device ID */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Device ID
+                </label>
+                <input
+                  name="device_id"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Device ID"
+                  value={form.device_id}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Join Date */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Join Date
+                </label>
+                <input
+                  name="join_date"
+                  type="date"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.join_date}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Confirm Date */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Confirm Date
+                </label>
+                <input
+                  name="confirm_date"
+                  type="date"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.confirm_date}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Reporting To */}
+              {/* <div>
+                <label className="block text-sm font-medium mb-1">
+                  Reporting To
+                </label>
+                <select
+                  name="reporting_to"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.reporting_to}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Reporting To</option>
+                  {employees.map((employee) => (
+                    <option key={employee.id} value={employee.id}>
+                      {employee.first_name} {employee.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div> */}
+              {/* Disburse Type */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Disburse Type
+                </label>
+                <select
+                  name="disburse_type"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.disburse_type}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Type</option>
+                  <option value="bank">Bank</option>
+                  <option value="cash">Cash</option>
+                </select>
+              </div>
+              {/* MFS Number */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  MFS Number
+                </label>
+                <input
+                  name="mfs_number"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="MFS Number"
+                  value={form.mfs_number}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Shift */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Shift</label>
+                <select
+                  name="shift"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.shift}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Shift</option>
+                  <option value="morning">Morning</option>
+                  <option value="evening">Evening</option>
+                </select>
+              </div>
+              {/* Weekend */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Weekend
+                </label>
+                <select
+                  name="weekend"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.weekend}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Weekend</option>
+                  <option value="friday">Friday</option>
+                  <option value="saturday">Saturday</option>
+                  <option value="sunday">Sunday</option>
+                  <option value="monday">Monday</option>
+                  <option value="tuesday">Tuesday</option>
+                  <option value="wednesday">Wednesday</option>
+                  <option value="thursday">Thursday</option>
+                </select>
+              </div>
+
+              {/* Official Mail */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Official Email
+                </label>
+                <input
+                  name="official_email"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Official Email"
+                  value={form.official_email}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* Official Mobile */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Official Mobile
+                </label>
+                <input
+                  name="official_mobile"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.official_mobile}
+                  onChange={handleChange}
+                  type="tel"
+                  pattern="01[0-9]{9}"
+                  maxLength="11"
+                  placeholder="01XXXXXXXXX"
+                  title="Mobile number must be 11 digits and start with 01"
+                />
+              </div>
+
+              {/* Work Location */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Work Location
+                </label>
+                <input
+                  name="work_location"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Work Location"
+                  value={form.work_location}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* OT_eligibility */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  OT Eligibility
+                </label>
+                <select
+                  name="ot_eligibility"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.ot_eligibility}
+                  onChange={handleChange}
+                >
+                  <option value="">Select OT Eligibility</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+
+              {/* software_user */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Software User
+                </label>
+                <select
+                  name="software_user"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.software_user}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Software User</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+
+              {/* emp_panel_user */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Employee Panel User
+                </label>
+                <select
+                  name="emp_panel_user"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.emp_panel_user}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Employee Panel User</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+
+              {/* bgmea_ID */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  BGMEA ID
+                </label>
+                <input
+                  name="bgmea_id"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="BGMEA ID"
+                  value={form.bgmea_id}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* bkmea_ID */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  BKMEA ID
+                </label>
+                <input
+                  name="bkmea_id"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="BKMEA ID"
+                  value={form.bkmea_id}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* transport */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Transport
+                </label>
+                <select
+                  name="transport"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.transport}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Transport</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+
+              {/* food_allowance */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Food Allowance
+                </label>
+                <input
+                  name="food_allowance"
+                  type="number"
+                  step="0.01"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="0.00"
+                  value={form.food_allowance}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* bank_name */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Bank Name
+                </label>
+                <input
+                  name="bank_name"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Bank Name"
+                  value={form.bank_name}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* bank_account_no */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Bank Account Number
+                </label>
+                <input
+                  name="bank_account_no"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Bank Account Number"
+                  value={form.bank_account_no}
+                  onChange={handleChange}
+                />
+              </div>
+              {/* account_type */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Account Type
+                </label>
+                <input
+                  name="account_type"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Account Type"
+                  value={form.account_type}
+                  onChange={handleChange}
+                />
+              </div>
+
               {/* Is Active */}
               {/* <div className="col-span-3 mt-4">
                 <label className="flex items-center gap-2 p-2 border border-gray-300 rounded w-fit">
@@ -1640,7 +2007,6 @@ const EmployeeCreate = () => {
                   <span className="text-sm font-medium">Active Employee</span>
                 </label>
               </div> */}
-
             </div>
           )}
 
