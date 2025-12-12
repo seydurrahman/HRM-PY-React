@@ -10,6 +10,7 @@ const EmployeeCreate = () => {
 
   const [designations, setDesignations] = useState([]);
   const [grades, setGrades] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
   const [units, setUnits] = useState([]);
   const [divisions, setDivisions] = useState([]);
@@ -66,7 +67,6 @@ const EmployeeCreate = () => {
       floor: "",
       line: "",
       designation: "",
-      grade: "",
 
       // Basic
       date_of_birth: "",
@@ -311,6 +311,14 @@ const EmployeeCreate = () => {
       nominee_union: "",
     }));
   }, [form.nominee_upazila]);
+
+  // emploee Id get
+  useEffect(() => {
+    api
+      .get("/employees/")
+      .then((res) => setEmployees(res.data))
+      .catch((err) => console.error("Employee fetch error:", err));
+  }, []);
 
   // Auto-generate employee code
   useEffect(() => {
@@ -1637,8 +1645,10 @@ const EmployeeCreate = () => {
                 </select>
               </div>
               {/* Group */}
-              {/* <div>
-                <label className="block text-sm font-medium mb-1">Group</label>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Group Name
+                </label>
                 <select
                   name="group_name"
                   className="border border-gray-300 p-2 rounded w-full"
@@ -1646,13 +1656,13 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Group</option>
-                  {group_name.map((g) => (
-                    <option key={g.id} value={g.name}>
-                      {g.name}
-                    </option>
-                  ))}
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                  <option value="E">E</option>
                 </select>
-              </div> */}
+              </div>
 
               {/* Grade */}
               <div>
@@ -1712,7 +1722,7 @@ const EmployeeCreate = () => {
                 />
               </div>
               {/* Reporting To */}
-              {/* <div>
+              <div>
                 <label className="block text-sm font-medium mb-1">
                   Reporting To
                 </label>
@@ -1723,13 +1733,14 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Reporting To</option>
-                  {employees.map((employee) => (
-                    <option key={employee.id} value={employee.id}>
-                      {employee.first_name} {employee.last_name}
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.code} — {emp.first_name} {emp.last_name}
                     </option>
                   ))}
                 </select>
-              </div> */}
+              </div>
+
               {/* Disburse Type */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -1769,8 +1780,9 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Shift</option>
-                  <option value="morning">Morning</option>
-                  <option value="evening">Evening</option>
+                  <option value="morning">General(8am-5pm)</option>
+                  <option value="evening">Day(8am-8pm)</option>
+                  <option value="evening">Night(8pm-8am)</option>
                 </select>
               </div>
               {/* Weekend */}

@@ -9,6 +9,7 @@ from settings_app.models import (
 )
 
 class Employee(models.Model):
+
     # Employee
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     code = models.CharField(max_length=20, unique=True)
@@ -81,7 +82,7 @@ class Employee(models.Model):
     employment_type = models.CharField(
         max_length=2, choices=EmploymentType.choices, default=EmploymentType.FULL_TIME
     )
-    group_name = models.CharField(max_length=100, blank=True)  # settings_app/group
+    group_name = models.CharField(max_length=100, blank=True)
     # Grade - settings_app/grade
     device_id = models.CharField(max_length=100, blank=True)
     join_date = models.DateField()
@@ -105,7 +106,7 @@ class Employee(models.Model):
     branch_name = models.CharField(max_length=100, blank=True)
     account_no = models.CharField(max_length=100, blank=True)
     account_type = models.CharField(max_length=50, blank=True)
-    
+
 
     documents = models.FileField(upload_to='employee_docs/', null=True, blank=True)
     probation_end_date = models.DateField(null=True, blank=True)
