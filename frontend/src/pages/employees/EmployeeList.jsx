@@ -60,8 +60,8 @@ const EmployeeList = () => {
                     {e.first_name} {e.last_name}
                   </td>
                   <td className="px-3 py-2">{e.email}</td>
-                  <td className="px-3 py-2">{e.designation_name}</td>
-                  <td className="px-3 py-2">{e.grade_name}</td>
+                  <td className="px-3 py-2">{e.designation_name || "-"}</td>
+                  <td className="px-3 py-2">{e.grade_name || "-"}</td>
                 </tr>
               ))}
           </tbody>

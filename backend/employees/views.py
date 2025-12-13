@@ -10,17 +10,21 @@ from rest_framework.permissions import AllowAny
 
 from .models import Employee
 from .serializers import EmployeeSerializer
+from .filters import EmployeeFilter   # ✅ ADD THIS
+
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.all().order_by("code")
+    queryset = Employee.objects.select_related(
+        "designation", "grade"
+    ).order_by("code")
+
     serializer_class = EmployeeSerializer
     permission_classes = [IsAuthenticated]
 
-    # ADD THIS ↓↓
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = EmployeeFilter   # ✅ USE CUSTOM FILTER
 
-    filterset_fields = ["employee_type", "employment_type", "designation", "grade"]
     search_fields = ["code", "first_name", "last_name", "email"]
     ordering_fields = ["code", "first_name", "last_name"]
 

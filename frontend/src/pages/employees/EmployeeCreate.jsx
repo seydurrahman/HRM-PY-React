@@ -56,6 +56,8 @@ const EmployeeCreate = () => {
     },
   ]);
 
+  const [otherDocs, setOtherDocs] = useState([{ title: "", file: null }]);
+
   const [units, setUnits] = useState([]);
   const [divisions, setDivisions] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -225,7 +227,7 @@ const EmployeeCreate = () => {
       result: "",
 
       // Leave Info
-      leave_effective:"",
+      leave_effective: "",
       casual_leave: "",
       sick_leave: "",
       earned_leave: "",
@@ -236,26 +238,26 @@ const EmployeeCreate = () => {
       unpaid_leave: "",
 
       // Training
-      training_name:"",
-      training_institute:"",
-      institute_address:"",
-      training_duration:"",
-      training_result:"",
-      remarks:"",
+      training_name: "",
+      training_institute: "",
+      institute_address: "",
+      training_duration: "",
+      training_result: "",
+      remarks: "",
 
       // Documents
-      emp_id:"",
+      emp_id: "",
       emp_id_docs: null,
-      emp_birthcertificate:"",
-      emp_birthcertificate_docs:null,
-      nominee_id:"",
-      nominee_id_docs:null,
-      job_exp_certificate:"",
-      job_exp_certificate_docs:null,
-      education_certificate:"",
-      education_certificate_docs:null,
-      training_certificate:"",
-      training_certificate_docs:null,
+      emp_birthcertificate: "",
+      emp_birthcertificate_docs: null,
+      nominee_id: "",
+      nominee_id_docs: null,
+      job_exp_certificate: "",
+      job_exp_certificate_docs: null,
+      education_certificate: "",
+      education_certificate_docs: null,
+      training_certificate: "",
+      training_certificate_docs: null,
 
       // system
       is_active: true,
@@ -505,6 +507,21 @@ const EmployeeCreate = () => {
     const updated = [...training];
     updated[index][e.target.name] = e.target.value;
     setTraining(updated);
+  };
+  // Add/Remove for Others Document
+  const handleOtherDocChange = (index, field, value) => {
+    const updated = [...otherDocs];
+    updated[index][field] = value;
+    setOtherDocs(updated);
+  };
+
+  const addOtherDoc = () => {
+    setOtherDocs([...otherDocs, { title: "", file: null }]);
+  };
+
+  const removeOtherDoc = (index) => {
+    const updated = otherDocs.filter((_, i) => i !== index);
+    setOtherDocs(updated);
   };
 
   // Auto-generate employee code
@@ -2448,8 +2465,8 @@ const EmployeeCreate = () => {
             </div>
           )}
 
-           {/* Leave Info*/}
-           {activeTab === "leave info" && (
+          {/* Leave Info*/}
+          {activeTab === "leave info" && (
             <div className="grid grid-cols-3 gap-4">
               {/* Leave Effective Date */}
               <div>
@@ -2520,7 +2537,7 @@ const EmployeeCreate = () => {
               {/* Paternity Leave */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                   Paternity Leave
+                  Paternity Leave
                 </label>
                 <input
                   name="paternity_leave"
@@ -2572,7 +2589,6 @@ const EmployeeCreate = () => {
                   placeholder="Unpaid Leave"
                 />
               </div>
-
             </div>
           )}
 
@@ -2804,11 +2820,8 @@ const EmployeeCreate = () => {
             </div>
           )}
 
-          
-         
-        
           {/* Training Tab */}
-           {activeTab === "training" && (
+          {activeTab === "training" && (
             <div className="space-y-6">
               {training.map((edu, index) => (
                 <div
@@ -2880,7 +2893,7 @@ const EmployeeCreate = () => {
 
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                     Training Duration
+                      Training Duration
                     </label>
                     <input
                       name="training_duration"
@@ -2921,35 +2934,30 @@ const EmployeeCreate = () => {
             </div>
           )}
 
-
-
-
           {/* DOCUMENTS TAB */}
           {activeTab === "documents" && (
-            <div className="grid grid-cols-3 gap-4">
-              
-
-              {/* Passport Number */}
-              <div>
+            <div className="grid grid-cols-2 max-w-[70%] gap-4">
+              {/* Employee NID */}
+              <div className="">
                 <label className="block text-sm font-medium mb-1">
-                  Passport Number
+                  Employee NID
                 </label>
                 <input
-                  name="passport_number"
+                  name="emp_id"
+                  value={form.emp_id}
                   className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Passport Number"
-                  value={form.passport_number}
+                  placeholder="Employee NID"
                   onChange={handleChange}
                 />
               </div>
-
-              {/* Documents Upload */}
-              <div className="col-span-3">
+              {/* NID Image */}
+              <div>
                 <label className="block text-sm font-medium mb-1">
-                  Upload Documents (PDF, JPEG, PNG)
+                  NID (PDF, JPEG, PNG)
                 </label>
                 <input
                   type="file"
+                  name="emp_id_docs"
                   accept=".pdf,.jpg,.jpeg,.png"
                   className="border border-gray-300 p-2 rounded w-full"
                   onChange={handleFileChange}
@@ -2959,6 +2967,230 @@ const EmployeeCreate = () => {
                     ✓ File selected: {form.documents.name}
                   </p>
                 )}
+              </div>
+
+              {/* Employee Birth Certificate */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Employee Bith Certificate
+                </label>
+                <input
+                  name="emp_birthcertificate"
+                  value={form.emp_birthcertificate}
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Emp BC"
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Birth Certificate */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Birth Certificate (PDF, JPEG, PNG)
+                </label>
+                <input
+                  type="file"
+                  name="emp_birthcertificate_docs"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  onChange={handleFileChange}
+                />
+                {form.documents && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ File selected: {form.documents.name}
+                  </p>
+                )}
+              </div>
+
+              {/*Nominee NID */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Nominee NID
+                </label>
+                <input
+                  name="nominee_id"
+                  value={form.nominee_id}
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Nominee NID"
+                  onChange={handleChange}
+                />
+              </div>
+              {/* NID Image */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Nominee NID (PDF, JPEG, PNG)
+                </label>
+                <input
+                  type="file"
+                  name="nominee_id_docs"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  onChange={handleFileChange}
+                />
+                {form.documents && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ File selected: {form.documents.name}
+                  </p>
+                )}
+              </div>
+
+              {/*Job Certificate */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Job Certificate
+                </label>
+                <input
+                  name="job_exp_certificate"
+                  value={form.job_exp_certificate}
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Job Certificate"
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Job Certificate */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Job Certificate (PDF, JPEG, PNG)
+                </label>
+                <input
+                  type="file"
+                  name="job_exp_certificate_docs"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  onChange={handleFileChange}
+                />
+                {form.documents && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ File selected: {form.documents.name}
+                  </p>
+                )}
+              </div>
+
+              {/*Education Certificate */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Education Certificate
+                </label>
+                <input
+                  name="education_certificate"
+                  value={form.education_certificate}
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Education Certificate"
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Education Certificate */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Certificate (PDF, JPEG, PNG)
+                </label>
+                <input
+                  type="file"
+                  name="education_certificate_docs"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  onChange={handleFileChange}
+                />
+                {form.documents && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ File selected: {form.documents.name}
+                  </p>
+                )}
+              </div>
+
+              {/*Training Certificate */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Training Certificate
+                </label>
+                <input
+                  name="training_certificate"
+                  value={form.training_certificate}
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Training Certificate"
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Training Certificate */}
+              <div className="">
+                <label className="block text-sm font-medium mb-1">
+                  Certificate (PDF, JPEG, PNG)
+                </label>
+                <input
+                  type="file"
+                  name="training_certificate_docs"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  onChange={handleFileChange}
+                />
+                {form.documents && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ File selected: {form.documents.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Others Documents */}
+              <div className="space-y-4 w-full">
+                <label className="block text-sm font-medium">
+                  Other Documents
+                </label>
+
+                {otherDocs.map((doc, index) => (
+                  <div key={index} className="flex gap-4 items-start">
+                    {/* Document Name */}
+                    <div className="w-1/2">
+                      <input
+                        type="text"
+                        name="others_docs"
+                        placeholder="Document name"
+                        className="border border-gray-300 p-2 rounded w-full"
+                        value={doc.title}
+                        onChange={(e) =>
+                          handleOtherDocChange(index, "title", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* File Upload */}
+                    <div className="w-1/2">
+                      <input
+                        type="file"
+                        name="others_docs_file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="border border-gray-300 p-2 rounded w-full"
+                        onChange={(e) =>
+                          handleOtherDocChange(index, "file", e.target.files[0])
+                        }
+                      />
+
+                      {doc.file && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✓ {doc.file.name}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Remove Button */}
+                    {otherDocs.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeOtherDoc(index)}
+                        className="text-red-600 text-sm px-2"
+                      >
+                        ❌
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                {/* Add Button */}
+                <button
+                  type="button"
+                  onClick={addOtherDoc}
+                  className="text-blue-600 text-sm font-medium"
+                >
+                  ➕ Add another document
+                </button>
               </div>
             </div>
           )}

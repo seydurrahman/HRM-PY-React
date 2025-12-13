@@ -4,6 +4,8 @@ from django_countries.fields import CountryField
 from settings_app.models import (
     EmployeeType,
     EmploymentType,
+    Designation,
+    Grade,
     Group,
     Bank,
 )
@@ -26,6 +28,19 @@ class Employee(models.Model):
     # Floor - organization/floor
     # Line - organization/line
     # Designation - settings_app/designation
+    designation = models.ForeignKey(
+    "settings_app.Designation",
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True
+)
+
+    grade = models.ForeignKey(
+    "settings_app.Grade",
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True
+)
 
     # Basic
     date_of_birth = models.DateField(null=True, blank=True)
@@ -176,6 +191,9 @@ class Employee(models.Model):
     education_certificate_docs = models.FileField(upload_to='employee_docs/', null=True, blank=True)
     training_certificate = models.CharField(max_length=50,blank=True, null=True)
     training_certificate_docs = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+    others_docs = models.CharField(max_length=50, blank=True, null=True)
+    others_docs_file = models.FileField(upload_to='employee_docs/', null=True, blank=True)
+
     
     # system auto
     is_active = models.BooleanField(default=True)

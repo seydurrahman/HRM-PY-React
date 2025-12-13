@@ -4,11 +4,14 @@ from settings_app.models import Designation, Grade
 from django_countries.serializers import CountryFieldMixin
 
 class EmployeeSerializer(CountryFieldMixin, serializers.ModelSerializer):
-    designation_name = serializers.CharField(source="designation.name", read_only=True)
-    grade_name = serializers.CharField(source="grade.name", read_only=True)
-
-    # ADD THIS ↓↓↓
-    documents = serializers.FileField(required=False, allow_null=True,write_only=True)
+    designation_name = serializers.CharField(
+        source="designation.name",
+        read_only=True
+    )
+    grade_name = serializers.CharField(
+        source="grade.name",
+        read_only=True
+    )
 
     class Meta:
         model = Employee
@@ -33,11 +36,15 @@ class EmployeeSerializer(CountryFieldMixin, serializers.ModelSerializer):
         if "join_date" not in validated_data:
             from datetime import date
             validated_data["join_date"] = date.today()
+
         return super().create(validated_data)
-    
+
     def validate_date_of_birth(self, value):
         if value:
             from datetime import date
             if value > date.today():
-                raise serializers.ValidationError("Date of birth cannot be in the future.")
+                raise serializers.ValidationError(
+                    "Date of birth cannot be in the future."
+                )
         return value
+
