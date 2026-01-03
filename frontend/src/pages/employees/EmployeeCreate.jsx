@@ -1379,14 +1379,21 @@ const EmployeeCreate = () => {
                 <label className="block text-sm font-medium mb-1">
                   Nominee Relation
                 </label>
-                <input
+                <select
                   name="nominee_relation"
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Nominee Relation"
                   value={form.nominee_relation}
-                  onChange={handleChange}
-                />
+                  onChange={handleChange}>
+                  <option value="">Select Marital Status</option>
+                  <option value="single">Mother</option>
+                  <option value="married">Father</option>
+                  <option value="divorced">Brother</option>
+                  <option value="widowed">Sister</option>
+                  <option value="widowed">Others</option>
+                </select>
               </div>
+              
               {/* Nominee Mobile */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -2260,13 +2267,15 @@ const EmployeeCreate = () => {
                 <label className="block text-sm font-medium mb-1">
                   Late Deduction
                 </label>
-                <input
+                <select>
                   name="late_deduction"
                   value={form.late_deduction}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
                   placeholder="Late Deduction"
-                />
+                  <option value="">Yes</option>
+                  <option value="">No</option>
+                </select>
               </div>
               {/* Tin Number */}
               <div>
