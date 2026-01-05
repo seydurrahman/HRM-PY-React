@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../lib/api";
 
+
 const EmployeeCreate = () => {
   const navigate = useNavigate();
 
@@ -2267,12 +2268,12 @@ const EmployeeCreate = () => {
                 <label className="block text-sm font-medium mb-1">
                   Late Deduction
                 </label>
-                <select>
+                <select
                   name="late_deduction"
                   value={form.late_deduction}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
-                  placeholder="Late Deduction"
+                  placeholder="Late Deduction">
                   <option value="">Yes</option>
                   <option value="">No</option>
                 </select>
