@@ -43,13 +43,14 @@ const EmployeeList = () => {
               <th className="px-3 py-2">Section</th>
               <th className="px-3 py-2">Designation</th>
               <th className="px-3 py-2">Grade</th>
+              <th className="px-3 py-2">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {loading && (
               <tr>
-                <td colSpan="5" className="px-3 py-4">
+                <td colSpan="8" className="px-3 py-4">
                   Loading...
                 </td>
               </tr>
@@ -63,7 +64,9 @@ const EmployeeList = () => {
                     {e.first_name} {e.last_name}
                   </td>
                   <td className="px-3 py-2">{e.email || "-"}</td>
-                  <td className="px-3 py-2">{e.department || "-"}</td>
+                  <td className="px-3 py-2">
+                    {e.department_name || e.department || "-"}
+                  </td>
                   <td className="px-3 py-2">{e.section || "-"}</td>
                   <td className="px-3 py-2">
                     {e.designation_name ||
@@ -72,6 +75,14 @@ const EmployeeList = () => {
                   </td>
                   <td className="px-3 py-2">
                     {e.grade_name || e.grade?.name || "Not assigned"}
+                  </td>
+                  <td className="px-3 py-2">
+                    <Link
+                      to={`/employees/${e.id}/edit`}
+                      className="px-2 py-1 bg-slate-200 rounded text-sm"
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))}

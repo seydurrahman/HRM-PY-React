@@ -1,8 +1,46 @@
 from rest_framework import serializers
 from .models import (
+    Unit, Division, Department, Section, SubSection, Floor, Line,
     Grade, Designation, Group, Bank,
     SalarySetting, PFSetting, OTSetting
 )
+# Organization hierarchy
+# ========================
+
+class UnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Unit
+        fields = ["id", "name"]
+
+class DivisionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Division
+        fields = ["id", "name", "unit"]
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ["id", "name", "division"]
+
+class SectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = ["id", "name", "department"]
+
+class SubSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubSection
+        fields = ["id", "name", "section"]
+
+class FloorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Floor
+        fields = ["id", "name"]
+
+class LineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Line
+        fields = ["id", "name", "floor"]
 
 class GradeSerializer(serializers.ModelSerializer):
     class Meta:

@@ -92,6 +92,7 @@ function App() {
         {/* Employees */}
         <Route path="/employees" element={<EmployeeList />} />
         <Route path="/employees/new" element={<EmployeeCreate />} />
+        <Route path="/employees/:id/edit" element={<EmployeeCreate />} />
 
         {/* Attendance */}
         <Route path="/attendance" element={<AttendanceList />} />

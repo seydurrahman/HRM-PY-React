@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../lib/api";
-
 
 const EmployeeCreate = () => {
   const navigate = useNavigate();
+  const params = useParams();
+  const [isEdit, setIsEdit] = useState(false);
 
   const tabs = [
     "employee",
@@ -166,30 +167,47 @@ const EmployeeCreate = () => {
       // Official
       employee_type: "PER",
       employment_type: "FT",
-      group_name: "",
-      grade: "",
-      device_id: "",
-      join_date: "",
-      confirm_date: "",
-      reporting_to: "",
-      disburse_type: "",
-      mfs_number: "",
-      shift: "",
-      weekends: "",
-      office_email: "",
-      emp_panel_user: "",
-      bgmea_ID: "",
-      bkmea_ID: "",
+      group_name: null,
+      grade: null,
+      device_id: null,
+      join_date: null,
+      confirm_date: null,
+      reporting_to: null,
+      disburse_type: null,
+      mfs_number: null,
+      shift: null,
+      weekends: null,
+      office_email: null,
+      emp_panel_user: false,
+      bgmea_ID: null,
+      bkmea_ID: null,
       transport: false,
-      food_allowance: "",
-      bank_name: "",
-      branch_name: "",
-      account_no: "",
-      account_type: "",
-      basic_salary: "",
-      bank_name: "",
-      account_number: "",
-      nid_number: "",
+      food_allowance: null,
+      bank_name: null,
+      branch_name: null,
+      account_no: null,
+      account_number: null,
+      account_type: null,
+      tin_number: null,
+
+      // Salary
+      effective_date: null,
+      salary_policy: null,
+      pf_applicable: false,
+      late_deduction: false,
+      gross_salary: null,
+      basic_salary: null,
+      house_rent: null,
+      medical_allowance: null,
+      mobile_allowance: null,
+      transport_allowance: null,
+      conveyance_allowance: null,
+      other_allowance: null,
+      attendance_bonus: null,
+      tax_deduction: null,
+      insurance_deduction: null,
+      stamp_deduction: null,
+      other_deduction: null,
 
       // Job Experience
       job_company_name: "",
@@ -198,26 +216,6 @@ const EmployeeCreate = () => {
       job_start_date: "",
       job_end_date: "",
       leave_reason: "",
-
-      // Salary
-      effective_date: "",
-      salary_policy: "",
-      pf_applicable: false,
-      late_deduction: false,
-      tin_number: "",
-      gross_salary: "",
-      basic_salary: "",
-      house_rent: "",
-      medical_allowance: "",
-      mobile_allowance: "",
-      transport_allowance: "",
-      conveyance_allowance: "",
-      other_allowance: "",
-      attendance_bonus: "",
-      tax_deduction: "",
-      insurance_deduction: "",
-      stamp_deduction: "",
-      other_deduction: "",
 
       // Education
       degree_title: "",
@@ -434,6 +432,83 @@ const EmployeeCreate = () => {
       .catch((err) => console.error("Employee fetch error:", err));
   }, []);
 
+  // If editing, load existing employee data
+  useEffect(() => {
+    if (!params?.id) return;
+    setIsEdit(true);
+    api
+      .get(`/employees/${params.id}/`)
+      .then((res) => {
+        const data = res.data;
+        // populate form with flat fields
+        const flatFields = { ...form };
+        Object.keys(flatFields).forEach((k) => {
+          if (Object.prototype.hasOwnProperty.call(data, k)) {
+            flatFields[k] = data[k] === null ? "" : data[k];
+          }
+        });
+        setForm(flatFields);
+
+        // arrays
+        setJobExperiences(
+          data.job_experiences && data.job_experiences.length
+            ? data.job_experiences
+            : [
+                {
+                  job_company_name: "",
+                  job_department: "",
+                  job_designation: "",
+                  job_start_date: "",
+                  job_end_date: "",
+                  leave_reason: "",
+                },
+              ]
+        );
+
+        setEducations(
+          data.educations && data.educations.length
+            ? data.educations
+            : [
+                {
+                  degree_title: "",
+                  major_subject: "",
+                  institute_name: "",
+                  passing_year: "",
+                  education_board: "",
+                  result: "",
+                },
+              ]
+        );
+
+        setTraining(
+          data.trainings && data.trainings.length
+            ? data.trainings
+            : [
+                {
+                  training_name: "",
+                  training_institute: "",
+                  institute_address: "",
+                  training_duration: "",
+                  training_result: "",
+                  remarks: "",
+                },
+              ]
+        );
+
+        // other docs (existing)
+        if (data.other_documents) {
+          setOtherDocs(
+            data.other_documents.map((d) => ({
+              title: d.title || "",
+              file: null,
+              id: d.id,
+              url: d.file,
+            }))
+          );
+        }
+      })
+      .catch((err) => console.error("Employee load error:", err));
+  }, [params?.id]);
   // Add/Remove Job Experience Entries
   const addJobExperience = () => {
     setJobExperiences([
@@ -695,27 +770,54 @@ const EmployeeCreate = () => {
     // Create FormData
     const fd = new FormData();
 
-    // Append all fields
+    // Append all flat fields
     Object.entries(form).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== "") {
-        if (key === "documents" && value instanceof File) {
+        if (value instanceof File) {
           fd.append(key, value, value.name);
-        } else if (key !== "documents") {
+        } else {
           fd.append(key, String(value));
         }
       }
     });
 
-    // Debug - show all FormData entries
-    console.log("FormData entries:");
+    // Append arrays (job experiences, educations, trainings)
+    if (jobExperiences && jobExperiences.length > 0) {
+      fd.append("job_experiences", JSON.stringify(jobExperiences));
+    }
+    if (educations && educations.length > 0) {
+      fd.append("educations", JSON.stringify(educations));
+    }
+    if (training && training.length > 0) {
+      fd.append("trainings", JSON.stringify(training));
+    }
+
+    // Other docs: send metadata and files
+    if (otherDocs && otherDocs.length > 0) {
+      fd.append(
+        "other_docs",
+        JSON.stringify(otherDocs.map((d) => ({ title: d.title })))
+      );
+      otherDocs.forEach((d) => {
+        if (d.file) fd.append("other_doc_files", d.file, d.file.name);
+      });
+    }
+
+    // Debug - show some FormData entries (first 20 entries only to avoid long logs)
+    console.log("FormData entries preview:");
+    let i = 0;
     for (let [key, value] of fd.entries()) {
       console.log(key, ":", value);
+      i++;
+      if (i > 20) break;
     }
 
     try {
-      console.log("Submitting to /employees/ with code:", form.code);
+      const endpoint = isEdit ? `/employees/${params.id}/` : "/employees/";
+      console.log("Submitting to", endpoint, "with code:", form.code);
 
-      const response = await api.post("/employees/", fd, {
+      const method = isEdit ? api.put : api.post;
+      const response = await method(endpoint, fd, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -724,14 +826,20 @@ const EmployeeCreate = () => {
       console.log("Success response:", response.data);
 
       localStorage.removeItem("employeeForm");
-      alert("Employee created successfully!");
+      alert(
+        isEdit
+          ? "Employee updated successfully!"
+          : "Employee created successfully!"
+      );
       navigate("/employees");
     } catch (err) {
       console.error("Submission error:", err);
       console.error("Error response:", err.response?.data);
 
       if (err.response?.data) {
-        let errorMessage = "Failed to create employee:\n";
+        let errorMessage = `Failed to ${
+          isEdit ? "update" : "create"
+        } employee:\n`;
         if (typeof err.response.data === "object") {
           Object.entries(err.response.data).forEach(([field, errors]) => {
             if (Array.isArray(errors)) {
@@ -745,27 +853,24 @@ const EmployeeCreate = () => {
         }
         alert(errorMessage);
       } else {
-        alert("Failed to create employee. Please check console for details.");
+        alert("Failed to submit employee. Please check console for details.");
       }
     }
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Add New Employee</h1>
-
-      {/* TABS */}
-      <div className="flex gap-10 border-b pb-2 text-sm">
+    <div className="container mx-auto p-6">
+      {/* Tab Navigation */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
         {tabs.map((tab) => (
           <button
             key={tab}
-            type="button"
-            className={`pb-2 capitalize ${
-              activeTab === tab
-                ? "border-b-2 border-blue-600 font-semibold text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
             onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 rounded-md whitespace-nowrap ${
+              activeTab === tab
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
@@ -1322,10 +1427,10 @@ const EmployeeCreate = () => {
               <div>
                 <label className="block text-sm font-medium mb-1">বাংলায়</label>
                 <input
-                  name="bangla_name"
+                  name="spouse_name_bangla"
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Spouse বাংলায়"
-                  value={form.bangla_name}
+                  value={form.spouse_name_bangla}
                   onChange={handleChange}
                 />
               </div>
@@ -1385,16 +1490,18 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Nominee Relation"
                   value={form.nominee_relation}
-                  onChange={handleChange}>
+                  onChange={handleChange}
+                >
                   <option value="">Select Marital Status</option>
                   <option value="single">Mother</option>
                   <option value="married">Father</option>
                   <option value="divorced">Brother</option>
                   <option value="widowed">Sister</option>
+                  <option value="widowed">Wife</option>
                   <option value="widowed">Others</option>
                 </select>
               </div>
-              
+
               {/* Nominee Mobile */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -2191,6 +2298,20 @@ const EmployeeCreate = () => {
                 />
               </div>
 
+              {/* branch_name */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Branch Name
+                </label>
+                <input
+                  name="branch_name"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Branch Name"
+                  value={form.branch_name}
+                  onChange={handleChange}
+                />
+              </div>
+
               {/* bank_account_no */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -2215,6 +2336,19 @@ const EmployeeCreate = () => {
                   placeholder="Account Type"
                   value={form.account_type}
                   onChange={handleChange}
+                />
+              </div>
+              {/* Tin Number */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Tin Number
+                </label>
+                <input
+                  name="tin_number"
+                  value={form.tin_number}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Tin Number"
                 />
               </div>
 
@@ -2263,6 +2397,22 @@ const EmployeeCreate = () => {
                   placeholder="Salary Policy"
                 />
               </div>
+              {/* PF applicable */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  PF Applicable
+                </label>
+                <select
+                  name="pf_applicable"
+                  value={form.pf_applicable}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  placeholder="PF Applicable"
+                >
+                  <option value="">Yes</option>
+                  <option value="">No</option>
+                </select>
+              </div>
               {/* Late Deduction */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -2273,24 +2423,13 @@ const EmployeeCreate = () => {
                   value={form.late_deduction}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
-                  placeholder="Late Deduction">
+                  placeholder="Late Deduction"
+                >
                   <option value="">Yes</option>
                   <option value="">No</option>
                 </select>
               </div>
-              {/* Tin Number */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Tin Number
-                </label>
-                <input
-                  name="tin_number"
-                  value={form.tin_number}
-                  onChange={handleChange}
-                  className="border p-2 rounded w-full"
-                  placeholder="Tin Number"
-                />
-              </div>
+
               {/* Gross Salary */}
               <div>
                 <label className="block text-sm font-medium mb-1">

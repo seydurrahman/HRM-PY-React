@@ -11,6 +11,55 @@ class EmploymentType(models.TextChoices):
     PART_TIME = "PT", "Part Time"
     CASUAL = "CS", "Casual"
 
+class Unit(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+    
+class Division(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+class Department(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    division = models.ForeignKey(Division, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+class Section(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+class SubSection(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+class Floor(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+class Line(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    floor = models.ForeignKey(Floor, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
 class Grade(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
