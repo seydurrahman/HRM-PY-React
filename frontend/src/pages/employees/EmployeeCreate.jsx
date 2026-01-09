@@ -6,6 +6,7 @@ const EmployeeCreate = () => {
   const navigate = useNavigate();
   const params = useParams();
   const [isEdit, setIsEdit] = useState(false);
+  const [originalCode, setOriginalCode] = useState(null);
 
   const tabs = [
     "employee",
@@ -81,29 +82,13 @@ const EmployeeCreate = () => {
 
   const [countries, setCountries] = useState([]);
 
-  // Load saved form data
+  // Form initial state (always start blank for Create; Edit will populate via API)
   const [form, setForm] = useState(() => {
-    const saved = localStorage.getItem("employeeForm");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        delete parsed.code;
-        return {
-          code: "",
-          date_of_birth: "",
-          ...parsed,
-        };
-      } catch (e) {
-        console.error("Error parsing saved form:", e);
-        localStorage.removeItem("employeeForm");
-      }
-    }
-
     return {
       // Employee
       code: "",
       employee_id: "",
-      first_name: "",
+      first_name: null,
       last_name: "",
       full_name_bangla: "",
       phone: "",
@@ -176,8 +161,10 @@ const EmployeeCreate = () => {
       disburse_type: null,
       mfs_number: null,
       shift: null,
+      OT_eligibility: false,
       weekends: null,
       office_email: null,
+      software_user: false,
       emp_panel_user: false,
       bgmea_ID: null,
       bkmea_ID: null,
@@ -262,13 +249,6 @@ const EmployeeCreate = () => {
       is_active: true,
     };
   });
-
-  // Save to localStorage
-  useEffect(() => {
-    if (form.code && form.code.trim() !== "") {
-      localStorage.setItem("employeeForm", JSON.stringify(form));
-    }
-  }, [form]);
 
   // Fetch designation + grade
   useEffect(() => {
@@ -442,12 +422,44 @@ const EmployeeCreate = () => {
         const data = res.data;
         // populate form with flat fields
         const flatFields = { ...form };
+
+        const normalizeValue = (val) => {
+          if (val === null || val === undefined) return "";
+          // If it's an FK-like object, prefer the id
+          if (typeof val === "object" && !Array.isArray(val)) {
+            if ("id" in val) return val.id;
+            return val;
+          }
+
+          // Convert datetimes -> date-only for <input type="date"> fields
+          if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
+            return val.split("T")[0];
+          }
+
+          // Normalize simple boolean-like strings ('yes'/'no'/'true'/'false') into booleans
+          if (typeof val === "string") {
+            const low = val.trim().toLowerCase();
+            if (low === "true" || low === "yes") return true;
+            if (low === "false" || low === "no") return false;
+
+            // Handle stringified single-item lists like "['PER']"
+            const listMatch = val
+              .trim()
+              .match(/^\[\s*['"]?([^'"\]]+)['"]?\s*\]$/);
+            if (listMatch) return listMatch[1];
+          }
+
+          return val;
+        };
+
         Object.keys(flatFields).forEach((k) => {
           if (Object.prototype.hasOwnProperty.call(data, k)) {
-            flatFields[k] = data[k] === null ? "" : data[k];
+            flatFields[k] = normalizeValue(data[k]);
           }
         });
+
         setForm(flatFields);
+        setOriginalCode(flatFields.code || data.code);
 
         // arrays
         setJobExperiences(
@@ -630,19 +642,44 @@ const EmployeeCreate = () => {
       }
     };
 
+    // Skip auto-generate when editing an existing employee
+    if (params?.id) {
+      setIsLoadingCode(false);
+      return;
+    }
+
     if (!form.code || form.code.trim() === "") {
       generateEmployeeCode();
     } else {
       setIsLoadingCode(false);
     }
-  }, []);
+  }, [params?.id]);
 
   // Handle input change
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    let newValue = type === "checkbox" ? checked : value;
+
+    // Convert 'true'/'false' or 'yes'/'no' strings coming from selects into booleans for these fields
+    if (typeof newValue === "string") {
+      const boolFields = [
+        "OT_eligibility",
+        "software_user",
+        "emp_panel_user",
+        "transport",
+        "pf_applicable",
+        "late_deduction",
+      ];
+      if (boolFields.includes(name)) {
+        if (newValue === "true" || newValue === "yes") newValue = true;
+        else if (newValue === "false" || newValue === "no") newValue = false;
+        else if (newValue === "") newValue = ""; // keep empty to allow validation
+      }
+    }
+
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: newValue,
     }));
 
     // Clear error for this field
@@ -651,14 +688,23 @@ const EmployeeCreate = () => {
     }
   };
 
-  // Handle file upload
+  // Handle file upload - store file under the input's `name` so multiple file inputs work
   const handleFileChange = (e) => {
-    setForm({ ...form, documents: e.target.files[0] });
+    const { name, files } = e.target;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    setForm((prev) => ({ ...prev, [name]: file }));
   };
 
   // Check code uniqueness
   const checkCode = async () => {
     if (!form.code) return;
+
+    // If editing and code unchanged, skip check
+    if (isEdit && originalCode && form.code === originalCode) {
+      setCodeError("");
+      return;
+    }
 
     setIsCheckingCode(true);
     try {
@@ -769,27 +815,207 @@ const EmployeeCreate = () => {
 
     // Create FormData
     const fd = new FormData();
+    console.log(FormData);
 
-    // Append all flat fields
-    Object.entries(form).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== "") {
-        if (value instanceof File) {
-          fd.append(key, value, value.name);
-        } else {
-          fd.append(key, String(value));
+    // Helper: normalize values for submission
+    const jsonFields = [
+      "job_experiences",
+      "educations",
+      "trainings",
+      "other_docs",
+      "other_doc_files",
+    ];
+
+    const normalizeForSubmit = (key, val) => {
+      if (val === null || val === undefined || val === "") return undefined;
+      if (val instanceof File) return val;
+
+      const booleanFields = [
+        "OT_eligibility",
+        "software_user",
+        "emp_panel_user",
+        "transport",
+        "pf_applicable",
+        "late_deduction",
+      ];
+
+      const numericFields = [
+        "attendance_bonus",
+        "gross_salary",
+        "basic_salary",
+        "house_rent",
+        "medical_allowance",
+        "mobile_allowance",
+        "transport_allowance",
+        "conveyance_allowance",
+        "other_allowance",
+        "tax_deduction",
+        "insurance_deduction",
+        "stamp_deduction",
+        "other_deduction",
+        "casual_leave",
+        "sick_leave",
+        "earned_leave",
+        "maternity_leave",
+        "paternity_leave",
+        "funeral_leave",
+        "compensatory_leave",
+        "unpaid_leave",
+        "weight",
+        "height",
+      ];
+
+      // Arrays: JSON stringify only for known JSON fields, otherwise take first primitive or stringify
+      if (Array.isArray(val)) {
+        if (jsonFields.includes(key)) return JSON.stringify(val);
+        if (val.length === 0) return undefined;
+        if (
+          val.every(
+            (v) => v === null || v === undefined || typeof v !== "object"
+          )
+        )
+          return String(val[0]);
+        return JSON.stringify(val);
+      }
+
+      // Plain objects: prefer id when available
+      if (typeof val === "object") {
+        if ("id" in val) return String(val.id);
+        return JSON.stringify(val);
+      }
+
+      // ISO datetimes -> date part (for <input type="date"> fields)
+      if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
+        return val.split("T")[0];
+      }
+
+      // Handle stringified single-item lists like "['PER']" or '["PER"]' -> return the inner value
+      if (typeof val === "string") {
+        const trimmed = val.trim();
+        const listMatch = trimmed.match(/^\[\s*['"]?([^'"\]]+)['"]?\s*\]$/);
+        if (listMatch) return String(listMatch[1]);
+
+        // Booleans provided as strings (yes/no/true/false)
+        if (booleanFields.includes(key)) {
+          const low = trimmed.toLowerCase();
+          if (low === "true" || low === "yes") return "true";
+          if (low === "false" || low === "no") return "false";
         }
+
+        // Numeric fields provided as strings — sanitize basic formatting like commas
+        if (numericFields.includes(key)) {
+          const cleaned = trimmed.replace(/,/g, "");
+          if (/^-?\d+(?:\.\d+)?$/.test(cleaned)) return cleaned;
+        }
+      }
+
+      // If value is already a boolean, stringify it (FormData only accepts strings/files)
+      if (typeof val === "boolean") {
+        if (booleanFields.includes(key)) return String(val);
+      }
+
+      // If value is already a number and belongs to numericFields
+      if (typeof val === "number") {
+        if (numericFields.includes(key)) return String(val);
+      }
+
+      return String(val);
+    };
+
+    // Append normalized flat fields (skip fields that are handled separately below)
+    const fileFields = [
+      "emp_id_docs",
+      "emp_birthcertificate_docs",
+      "nominee_id_docs",
+      "job_exp_certificate_docs",
+      "education_certificate_docs",
+      "training_certificate_docs",
+      "others_docs_file",
+    ];
+
+    Object.entries(form).forEach(([key, value]) => {
+      if (
+        [
+          "job_experiences",
+          "educations",
+          "trainings",
+          "other_docs",
+          "other_doc_files",
+        ].includes(key)
+      )
+        return;
+      const nv = normalizeForSubmit(key, value);
+      if (nv === undefined) return;
+
+      // For file fields: only append when we have an actual File; skip string URLs
+      if (fileFields.includes(key)) {
+        if (nv instanceof File) fd.append(key, nv, nv.name);
+        else return; // don't send existing URL strings for file fields (saves validation errors)
+      } else {
+        if (nv instanceof File) fd.append(key, nv, nv.name);
+        else fd.append(key, nv);
       }
     });
 
+    // Debug: show normalized entries preview
+    console.log("Normalized form entries preview:");
+    let previewCount = 0;
+    for (let [key, value] of fd.entries()) {
+      console.log(key, ":", value);
+      previewCount++;
+      if (previewCount > 40) break;
+    }
+
+    // Detect duplicate keys (these become lists on the server and cause errors)
+    const dupKeys = [];
+    const keyCounts = {};
+    for (let [k] of fd.entries()) {
+      keyCounts[k] = (keyCounts[k] || 0) + 1;
+    }
+    Object.keys(keyCounts).forEach((k) => {
+      if (keyCounts[k] > 1) {
+        dupKeys.push(k);
+        console.warn(`Duplicate key detected for '${k}' ->`, fd.getAll(k));
+      }
+    });
+
+    if (dupKeys.length > 0) {
+      const msg =
+        "Duplicate form fields detected: " +
+        dupKeys.join(", ") +
+        ". This may cause the server to receive lists; please check the console output 'fd.getAll(key)'.";
+      console.error(msg);
+      alert(msg + "\nCheck console for details.");
+      return; // stop submit until duplicates resolved
+    }
+
     // Append arrays (job experiences, educations, trainings)
-    if (jobExperiences && jobExperiences.length > 0) {
-      fd.append("job_experiences", JSON.stringify(jobExperiences));
+    console.log("JobExperiences before submit:", jobExperiences);
+    const nonEmptyJobExperiences = (jobExperiences || []).filter((j) =>
+      Object.values(j).some(
+        (v) => v !== null && v !== undefined && String(v).trim() !== ""
+      )
+    );
+    if (nonEmptyJobExperiences.length > 0) {
+      fd.append("job_experiences", JSON.stringify(nonEmptyJobExperiences));
     }
-    if (educations && educations.length > 0) {
-      fd.append("educations", JSON.stringify(educations));
+
+    const nonEmptyEducations = (educations || []).filter((e) =>
+      Object.values(e).some(
+        (v) => v !== null && v !== undefined && String(v).trim() !== ""
+      )
+    );
+    if (nonEmptyEducations.length > 0) {
+      fd.append("educations", JSON.stringify(nonEmptyEducations));
     }
-    if (training && training.length > 0) {
-      fd.append("trainings", JSON.stringify(training));
+
+    const nonEmptyTrainings = (training || []).filter((t) =>
+      Object.values(t).some(
+        (v) => v !== null && v !== undefined && String(v).trim() !== ""
+      )
+    );
+    if (nonEmptyTrainings.length > 0) {
+      fd.append("trainings", JSON.stringify(nonEmptyTrainings));
     }
 
     // Other docs: send metadata and files
@@ -816,12 +1042,10 @@ const EmployeeCreate = () => {
       const endpoint = isEdit ? `/employees/${params.id}/` : "/employees/";
       console.log("Submitting to", endpoint, "with code:", form.code);
 
-      const method = isEdit ? api.put : api.post;
-      const response = await method(endpoint, fd, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      // Use PATCH for edits because many servers (and some middleware) handle multipart
+      // form uploads reliably with PATCH; PUT can cause multipart parsing issues.
+      const method = isEdit ? api.patch : api.post;
+      const response = await method(endpoint, fd);
 
       console.log("Success response:", response.data);
 
@@ -911,7 +1135,7 @@ const EmployeeCreate = () => {
                     type="button"
                     onClick={regenerateCode}
                     className="px-3 bg-blue-100 text-blue-600 rounded text-sm whitespace-nowrap hover:bg-blue-200"
-                    disabled={isLoadingCode}
+                    disabled={isLoadingCode || isEdit}
                   >
                     {isLoadingCode ? "..." : "⟳"}
                   </button>
@@ -992,10 +1216,10 @@ const EmployeeCreate = () => {
                   নাম [বাংলায়]
                 </label>
                 <input
-                  name="bangla_name"
+                  name="full_name_bangla"
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="পুরো নাম"
-                  value={form.bangla_name}
+                  value={form.full_name_bangla}
                   onChange={handleChange}
                 />
               </div>
@@ -1497,8 +1721,8 @@ const EmployeeCreate = () => {
                   <option value="married">Father</option>
                   <option value="divorced">Brother</option>
                   <option value="widowed">Sister</option>
-                  <option value="widowed">Wife</option>
-                  <option value="widowed">Others</option>
+                  <option value="wife">Wife</option>
+                  <option value="others">Others</option>
                 </select>
               </div>
 
@@ -2097,11 +2321,12 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   value={form.shift}
                   onChange={handleChange}
+                  defaultValue="morning"
                 >
                   <option value="">Select Shift</option>
                   <option value="morning">General(8am-5pm)</option>
-                  <option value="evening">Day(8am-8pm)</option>
-                  <option value="evening">Night(8pm-8am)</option>
+                  <option value="day">Day(8am-8pm)</option>
+                  <option value="night">Night(8pm-8am)</option>
                 </select>
               </div>
               {/* Weekend */}
@@ -2110,10 +2335,11 @@ const EmployeeCreate = () => {
                   Weekend
                 </label>
                 <select
-                  name="weekend"
+                  name="weekends"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.weekend}
+                  value={form.weekends}
                   onChange={handleChange}
+                  defaultValue="friday"
                 >
                   <option value="">Select Weekend</option>
                   <option value="friday">Friday</option>
@@ -2132,10 +2358,10 @@ const EmployeeCreate = () => {
                   Official Email
                 </label>
                 <input
-                  name="official_email"
+                  name="office_email"
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Official Email"
-                  value={form.official_email}
+                  value={form.office_email}
                   onChange={handleChange}
                 />
               </div>
@@ -2146,9 +2372,9 @@ const EmployeeCreate = () => {
                   Official Mobile
                 </label>
                 <input
-                  name="official_mobile"
+                  name="office_mobile"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.official_mobile}
+                  value={form.office_mobile}
                   onChange={handleChange}
                   type="tel"
                   pattern="01[0-9]{9}"
@@ -2178,14 +2404,14 @@ const EmployeeCreate = () => {
                   OT Eligibility
                 </label>
                 <select
-                  name="ot_eligibility"
+                  name="OT_eligibility"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.ot_eligibility}
+                  value={String(form.OT_eligibility)}
                   onChange={handleChange}
                 >
                   <option value="">Select OT Eligibility</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
                 </select>
               </div>
 
@@ -2197,12 +2423,12 @@ const EmployeeCreate = () => {
                 <select
                   name="software_user"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.software_user}
+                  value={String(form.software_user)}
                   onChange={handleChange}
                 >
                   <option value="">Select Software User</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
                 </select>
               </div>
 
@@ -2214,12 +2440,12 @@ const EmployeeCreate = () => {
                 <select
                   name="emp_panel_user"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.emp_panel_user}
+                  value={String(form.emp_panel_user)}
                   onChange={handleChange}
                 >
                   <option value="">Select Employee Panel User</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
                 </select>
               </div>
 
@@ -2229,10 +2455,10 @@ const EmployeeCreate = () => {
                   BGMEA ID
                 </label>
                 <input
-                  name="bgmea_id"
+                  name="bgmea_ID"
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="BGMEA ID"
-                  value={form.bgmea_id}
+                  value={form.bgmea_ID}
                   onChange={handleChange}
                 />
               </div>
@@ -2243,10 +2469,10 @@ const EmployeeCreate = () => {
                   BKMEA ID
                 </label>
                 <input
-                  name="bkmea_id"
+                  name="bkmea_ID"
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="BKMEA ID"
-                  value={form.bkmea_id}
+                  value={form.bkmea_ID}
                   onChange={handleChange}
                 />
               </div>
@@ -2259,12 +2485,12 @@ const EmployeeCreate = () => {
                 <select
                   name="transport"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.transport}
+                  value={String(form.transport)}
                   onChange={handleChange}
                 >
                   <option value="">Select Transport</option>
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
                 </select>
               </div>
 
@@ -2318,10 +2544,10 @@ const EmployeeCreate = () => {
                   Bank Account Number
                 </label>
                 <input
-                  name="bank_account_no"
+                  name="account_no"
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Bank Account Number"
-                  value={form.bank_account_no}
+                  value={form.account_no}
                   onChange={handleChange}
                 />
               </div>
@@ -2404,13 +2630,14 @@ const EmployeeCreate = () => {
                 </label>
                 <select
                   name="pf_applicable"
-                  value={form.pf_applicable}
+                  value={String(form.pf_applicable)}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
                   placeholder="PF Applicable"
                 >
-                  <option value="">Yes</option>
-                  <option value="">No</option>
+                  <option value="">Select PF Applicable</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
                 </select>
               </div>
               {/* Late Deduction */}
@@ -2420,13 +2647,14 @@ const EmployeeCreate = () => {
                 </label>
                 <select
                   name="late_deduction"
-                  value={form.late_deduction}
+                  value={String(form.late_deduction)}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
                   placeholder="Late Deduction"
                 >
-                  <option value="">Yes</option>
-                  <option value="">No</option>
+                  <option value="">Select Late Deduction</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
                 </select>
               </div>
 
@@ -2534,8 +2762,8 @@ const EmployeeCreate = () => {
                   Other Allowances
                 </label>
                 <input
-                  name="other_allowances"
-                  value={form.other_allowances}
+                  name="other_allowance"
+                  value={form.other_allowance}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
                   placeholder="Other Allowances"
@@ -3111,9 +3339,9 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   onChange={handleFileChange}
                 />
-                {form.documents && (
+                {form.emp_id_docs && (
                   <p className="text-xs text-green-600 mt-1">
-                    ✓ File selected: {form.documents.name}
+                    ✓ File selected: {form.emp_id_docs.name}
                   </p>
                 )}
               </div>
@@ -3143,9 +3371,9 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   onChange={handleFileChange}
                 />
-                {form.documents && (
+                {form.emp_birthcertificate_docs && (
                   <p className="text-xs text-green-600 mt-1">
-                    ✓ File selected: {form.documents.name}
+                    ✓ File selected: {form.emp_birthcertificate_docs.name}
                   </p>
                 )}
               </div>
@@ -3175,9 +3403,9 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   onChange={handleFileChange}
                 />
-                {form.documents && (
+                {form.nominee_id_docs && (
                   <p className="text-xs text-green-600 mt-1">
-                    ✓ File selected: {form.documents.name}
+                    ✓ File selected: {form.nominee_id_docs.name}
                   </p>
                 )}
               </div>
@@ -3207,9 +3435,9 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   onChange={handleFileChange}
                 />
-                {form.documents && (
+                {form.job_exp_certificate_docs && (
                   <p className="text-xs text-green-600 mt-1">
-                    ✓ File selected: {form.documents.name}
+                    ✓ File selected: {form.job_exp_certificate_docs.name}
                   </p>
                 )}
               </div>
@@ -3239,9 +3467,9 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   onChange={handleFileChange}
                 />
-                {form.documents && (
+                {form.education_certificate_docs && (
                   <p className="text-xs text-green-600 mt-1">
-                    ✓ File selected: {form.documents.name}
+                    ✓ File selected: {form.education_certificate_docs.name}
                   </p>
                 )}
               </div>
@@ -3271,9 +3499,9 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   onChange={handleFileChange}
                 />
-                {form.documents && (
+                {form.training_certificate_docs && (
                   <p className="text-xs text-green-600 mt-1">
-                    ✓ File selected: {form.documents.name}
+                    ✓ File selected: {form.training_certificate_docs.name}
                   </p>
                 )}
               </div>
