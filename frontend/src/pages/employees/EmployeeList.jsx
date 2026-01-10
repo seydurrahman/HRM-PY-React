@@ -37,10 +37,15 @@ const EmployeeList = () => {
           <thead className="bg-slate-50 text-left">
             <tr>
               <th className="px-3 py-2">System ID</th>
+              <th className="px-3 py-2">Employee ID</th>
               <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Email</th>
+              <th className="px-3 py-2">Unit</th>
+              <th className="px-3 py-2">Division</th>
               <th className="px-3 py-2">Department</th>
               <th className="px-3 py-2">Section</th>
+              <th className="px-3 py-2">Subsection</th>
+              <th className="px-3 py-2">Floor</th>
+              <th className="px-3 py-2">Line</th>
               <th className="px-3 py-2">Designation</th>
               <th className="px-3 py-2">Grade</th>
               <th className="px-3 py-2">Actions</th>
@@ -60,14 +65,31 @@ const EmployeeList = () => {
               employees.map((e) => (
                 <tr key={e.id} className="border-t">
                   <td className="px-3 py-2">{e.code}</td>
+                  <td className="px-3 py-2">{e.employee_id}</td>
                   <td className="px-3 py-2">
                     {e.first_name} {e.last_name}
                   </td>
-                  <td className="px-3 py-2">{e.email || "-"}</td>
+                  <td className="px-3 py-2">
+                    {e.unit_name || e.unit || "-"}
+                  </td>
+                  <td className="px-3 py-2">
+                    {e.division_name || e.division || "-"}
+                  </td>
                   <td className="px-3 py-2">
                     {e.department_name || e.department || "-"}
                   </td>
-                  <td className="px-3 py-2">{e.section || "-"}</td>
+                  <td className="px-3 py-2">
+                    {e.section_name || e.section || "-"}
+                  </td>
+                  <td className="px-3 py-2">
+                    {e.subsection_name || e.subsection || "-"}
+                  </td>
+                  <td className="px-3 py-2">
+                    {e.floor_name || e.floor || "-"}
+                  </td>
+                  <td className="px-3 py-2">
+                    {e.line_name || e.line || "-"}
+                  </td>
                   <td className="px-3 py-2">
                     {e.designation_name ||
                       e.designation?.name ||

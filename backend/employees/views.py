@@ -312,14 +312,27 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             if isinstance(data, dict):
                 if "other_deductions" in data and "other_deduction" not in data:
                     data["other_deduction"] = data.pop("other_deductions")
-                if "leave_effective" in data and "Leave_effective" not in data:
-                    data["Leave_effective"] = data.pop("leave_effective")
+                # Ensure serializer receives lowercase 'leave_effective' (serializer expects this field)
+                # Accept either 'Leave_effective' (legacy DB field) or 'leave_effective' (frontend)
+                if "Leave_effective" in data and "leave_effective" not in data:
+                    data["leave_effective"] = data.pop("Leave_effective")
+                # if frontend already sent 'leave_effective', leave it as-is
             else:
                 # QueryDict-like object
                 if data.get("other_deductions") and not data.get("other_deduction"):
                     data["other_deduction"] = data.get("other_deductions")
-                if data.get("leave_effective") and not data.get("Leave_effective"):
-                    data["Leave_effective"] = data.get("leave_effective")
+                if data.get("Leave_effective") and not data.get("leave_effective"):
+                    data["leave_effective"] = data.get("Leave_effective")
+        except Exception:
+            pass
+
+        # Debug resolved leave_effective value to aid troubleshooting
+        try:
+            print(
+                "DEBUG EMP CREATE - resolved leave_effective:",
+                data.get("leave_effective"),
+                data.get("Leave_effective"),
+            )
         except Exception:
             pass
 
@@ -430,13 +443,26 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             if isinstance(data, dict):
                 if "other_deductions" in data and "other_deduction" not in data:
                     data["other_deduction"] = data.pop("other_deductions")
-                if "leave_effective" in data and "Leave_effective" not in data:
-                    data["Leave_effective"] = data.pop("leave_effective")
+                # Ensure serializer receives lowercase 'leave_effective' (serializer expects this field)
+                # Accept either 'Leave_effective' (legacy DB field) or 'leave_effective' (frontend)
+                if "Leave_effective" in data and "leave_effective" not in data:
+                    data["leave_effective"] = data.pop("Leave_effective")
+                # if frontend already sent 'leave_effective', leave it as-is
             else:
                 if data.get("other_deductions") and not data.get("other_deduction"):
                     data["other_deduction"] = data.get("other_deductions")
-                if data.get("leave_effective") and not data.get("Leave_effective"):
-                    data["Leave_effective"] = data.get("leave_effective")
+                if data.get("Leave_effective") and not data.get("leave_effective"):
+                    data["leave_effective"] = data.get("Leave_effective")
+        except Exception:
+            pass
+
+        # Debug resolved leave_effective value to aid troubleshooting
+        try:
+            print(
+                "DEBUG EMP UPDATE - resolved leave_effective:",
+                data.get("leave_effective"),
+                data.get("Leave_effective"),
+            )
         except Exception:
             pass
 
@@ -504,7 +530,17 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     data[k] = cleaned
 
         serializer = self.get_serializer(instance, data=data, partial=partial)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            try:
+                print(
+                    "DEBUG EMP UPDATE - serializer.errors:",
+                    getattr(serializer, "errors", None),
+                )
+            except Exception:
+                pass
+            raise
         self.perform_update(serializer)
 
         if getattr(instance, "prefetch_related", None):
@@ -636,4 +672,6 @@ class CountryList(APIView):
 
         if saved:
             instance.save()
-        return Response({"saved": saved, "other_created": other_created, "id": instance.pk})
+        return Response(
+            {"saved": saved, "other_created": other_created, "id": instance.pk}
+        )

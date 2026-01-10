@@ -232,6 +232,8 @@ class Employee(models.Model):
     remarks = models.CharField(max_length=50, blank=True, null=True)
 
     # Documents upload
+    emp_image = models.CharField(max_length=50, blank=True, null=True)
+    emp_image_docs = models.FileField(upload_to="employee_docs/", null=True, blank=True)                                       
     emp_id = models.CharField(max_length=50, blank=True, null=True)
     emp_id_docs = models.FileField(upload_to="employee_docs/", null=True, blank=True)
     emp_birthcertificate = models.CharField(max_length=50, blank=True, null=True)

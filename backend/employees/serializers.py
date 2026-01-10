@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Employee, EmployeeOtherDocument
-from settings_app.models import Designation, Grade
+from settings_app.models import Designation, Grade, Division
 from django_countries.serializers import CountryFieldMixin
 
 
@@ -20,6 +20,16 @@ class EmployeeSerializer(CountryFieldMixin, serializers.ModelSerializer):
         read_only=True,
     )
     department_name = serializers.CharField(source="department.name", read_only=True)
+    unit_name = serializers.CharField(source="unit.name", read_only=True)
+    division_name = serializers.SerializerMethodField()
+    section_name = serializers.CharField(source="section.name", read_only=True)
+    subsection_name = serializers.CharField(source="subsection.name", read_only=True)
+    floor_name = serializers.CharField(source="floor.name", read_only=True)
+    line_name = serializers.CharField(source="line.name", read_only=True)
+    # Alias for legacy field name in model: provide lowercase key for frontend compatibility
+    leave_effective = serializers.DateField(
+        source="Leave_effective", required=False, allow_null=True
+    )
 
     other_documents = EmployeeOtherDocumentSerializer(many=True, read_only=True)
 
@@ -67,3 +77,18 @@ class EmployeeSerializer(CountryFieldMixin, serializers.ModelSerializer):
                     "Date of birth cannot be in the future."
                 )
         return value
+
+    def get_division_name(self, obj):
+        div = getattr(obj, "division", None)
+        # If division is a FK with a name attribute, return it
+        if hasattr(div, "name"):
+            return div.name
+        # If numeric id stored as a string or int, try to resolve it
+        try:
+            pk = int(div) if div is not None and div != "" else None
+        except (ValueError, TypeError):
+            return div or ""
+        if pk is None:
+            return div or ""
+        division_obj = Division.objects.filter(pk=pk).first()
+        return division_obj.name if division_obj else div or ""

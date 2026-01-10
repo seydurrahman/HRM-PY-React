@@ -164,6 +164,8 @@ const EmployeeCreate = () => {
       OT_eligibility: false,
       weekends: null,
       office_email: null,
+      office_mobile: null,
+      work_location: "",
       software_user: false,
       emp_panel_user: false,
       bgmea_ID: null,
@@ -232,6 +234,8 @@ const EmployeeCreate = () => {
       remarks: "",
 
       // Documents
+      emp_image: "",
+      emp_image_docs: null,
       emp_id: "",
       emp_id_docs: null,
       emp_birthcertificate: "",
@@ -451,6 +455,23 @@ const EmployeeCreate = () => {
 
           return val;
         };
+
+        // Map backend fields that use inconsistent naming to our form keys
+        if (
+          !Object.prototype.hasOwnProperty.call(data, "leave_effective") &&
+          Object.prototype.hasOwnProperty.call(data, "Leave_effective")
+        ) {
+          data.leave_effective = data.Leave_effective;
+        }
+        if (!Object.prototype.hasOwnProperty.call(data, "other_deduction")) {
+          if (Object.prototype.hasOwnProperty.call(data, "other_deductions")) {
+            data.other_deduction = data.other_deductions;
+          } else if (
+            Object.prototype.hasOwnProperty.call(data, "other_deduction")
+          ) {
+            data.other_deduction = data.other_deduction;
+          }
+        }
 
         Object.keys(flatFields).forEach((k) => {
           if (Object.prototype.hasOwnProperty.call(data, k)) {
@@ -830,6 +851,9 @@ const EmployeeCreate = () => {
       if (val === null || val === undefined || val === "") return undefined;
       if (val instanceof File) return val;
 
+      // Date objects (e.g., from date-picker libs) -> YYYY-MM-DD
+      if (val instanceof Date) return val.toISOString().split("T")[0];
+
       const booleanFields = [
         "OT_eligibility",
         "software_user",
@@ -924,6 +948,7 @@ const EmployeeCreate = () => {
 
     // Append normalized flat fields (skip fields that are handled separately below)
     const fileFields = [
+      "emp_image_docs",
       "emp_id_docs",
       "emp_birthcertificate_docs",
       "nominee_id_docs",
@@ -2832,8 +2857,8 @@ const EmployeeCreate = () => {
                   Other deductions
                 </label>
                 <input
-                  name="other_deductions"
-                  value={form.other_deductions}
+                  name="other_deduction"
+                  value={form.other_deduction}
                   onChange={handleChange}
                   className="border p-2 rounded w-full"
                   placeholder="Other deductions"
@@ -3314,8 +3339,39 @@ const EmployeeCreate = () => {
           {/* DOCUMENTS TAB */}
           {activeTab === "documents" && (
             <div className="grid grid-cols-2 max-w-[70%] gap-4">
+              {/* Employee Image */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Employee Image
+                </label>
+                <input
+                  name="emp_image"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  value={form.emp_image}
+                  placeholder="Employee Img"
+                  onChange={handleChange}
+                />
+              </div>
+              {/* Employee Image */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Image (JPG,JPEG,PNG){" "}
+                </label>
+                <input
+                  type="file"
+                  name="emp_image_docs"
+                  accept=".jpg,.jpeg,.png"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  onChange={handleFileChange}
+                />
+                {form.emp_image_docs && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ File selected: {form.emp_image_docs.name}
+                  </p>
+                )}
+              </div>
               {/* Employee NID */}
-              <div className="">
+              <div>
                 <label className="block text-sm font-medium mb-1">
                   Employee NID
                 </label>
