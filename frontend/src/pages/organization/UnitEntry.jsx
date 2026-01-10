@@ -9,21 +9,23 @@ export default function UnitEntry() {
   const [name, setName] = useState("");
 
   useEffect(() => {
-    api.get("/org/companies/").then(res => setCompanies(res.data));
+    api.get("/settings/companies/").then((res) => setCompanies(res.data));
   }, []);
 
   const loadUnits = (company_id) => {
     setSelectedCompany(company_id);
-    api.get(`/org/units/?company_id=${company_id}`).then(res => setUnits(res.data));
+    api
+      .get(`/settings/units/?company_id=${company_id}`)
+      .then((res) => setUnits(res.data));
   };
 
   const saveUnit = async () => {
     if (!selectedCompany) return alert("Select company");
     if (!name.trim()) return alert("Enter unit name");
 
-    await api.post("/org/units/", {
+    await api.post("/settings/units/", {
       name,
-      company: selectedCompany
+      company: selectedCompany,
     });
 
     setName("");
@@ -39,8 +41,10 @@ export default function UnitEntry() {
         onChange={(e) => loadUnits(e.target.value)}
       >
         <option>Select Company</option>
-        {companies.map(c => (
-          <option key={c.id} value={c.id}>{c.name}</option>
+        {companies.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
         ))}
       </select>
 
@@ -62,8 +66,10 @@ export default function UnitEntry() {
 
       <h2 className="text-lg font-semibold mt-4">Unit List</h2>
       <ul>
-        {units.map(u => (
-          <li key={u.id} className="border p-2">{u.name}</li>
+        {units.map((u) => (
+          <li key={u.id} className="border p-2">
+            {u.name}
+          </li>
         ))}
       </ul>
     </div>

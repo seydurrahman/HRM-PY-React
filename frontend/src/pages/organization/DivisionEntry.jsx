@@ -11,29 +11,33 @@ export default function DivisionEntry() {
   const [name, setName] = useState("");
 
   useEffect(() => {
-    api.get("/org/companies/").then(res => setCompanies(res.data));
+    api.get("/settings/companies/").then((res) => setCompanies(res.data));
   }, []);
 
   const loadUnits = (company_id) => {
     setSelectedCompany(company_id);
     setSelectedUnit("");
 
-    api.get(`/org/units/?company_id=${company_id}`).then(res => setUnits(res.data));
+    api
+      .get(`/settings/units/?company_id=${company_id}`)
+      .then((res) => setUnits(res.data));
     setDivisions([]);
   };
 
   const loadDivisions = (unit_id) => {
     setSelectedUnit(unit_id);
-    api.get(`/org/divisions/?unit_id=${unit_id}`).then(res => setDivisions(res.data));
+    api
+      .get(`/settings/divisions/?unit_id=${unit_id}`)
+      .then((res) => setDivisions(res.data));
   };
 
   const saveDivision = async () => {
     if (!selectedUnit) return alert("Select unit");
     if (!name.trim()) return alert("Enter division name");
 
-    await api.post("/org/divisions/", {
+    await api.post("/settings/divisions/", {
       name,
-      unit: selectedUnit
+      unit: selectedUnit,
     });
 
     setName("");
@@ -44,16 +48,29 @@ export default function DivisionEntry() {
     <div className="p-6 space-y-4">
       <h1 className="text-xl font-bold">Division Entry</h1>
 
-      <select className="border p-2 w-full" onChange={(e) => loadUnits(e.target.value)}>
+      <select
+        className="border p-2 w-full"
+        onChange={(e) => loadUnits(e.target.value)}
+      >
         <option>Select Company</option>
-        {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        {companies.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
       </select>
 
-      <select className="border p-2 w-full" disabled={!selectedCompany}
+      <select
+        className="border p-2 w-full"
+        disabled={!selectedCompany}
         onChange={(e) => loadDivisions(e.target.value)}
       >
         <option>Select Unit</option>
-        {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+        {units.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.name}
+          </option>
+        ))}
       </select>
 
       <input
@@ -74,8 +91,10 @@ export default function DivisionEntry() {
 
       <h2 className="text-lg font-semibold mt-4">Division List</h2>
       <ul>
-        {divisions.map(d => (
-          <li key={d.id} className="border p-2">{d.name}</li>
+        {divisions.map((d) => (
+          <li key={d.id} className="border p-2">
+            {d.name}
+          </li>
         ))}
       </ul>
     </div>

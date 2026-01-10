@@ -13,7 +13,7 @@ export default function DepartmentEntry() {
   const [name, setName] = useState("");
 
   useEffect(() => {
-    api.get("/org/companies/").then(res => setCompanies(res.data));
+    api.get("/settings/companies/").then((res) => setCompanies(res.data));
   }, []);
 
   const loadUnits = (company_id) => {
@@ -21,26 +21,36 @@ export default function DepartmentEntry() {
     setSelectedUnit("");
     setSelectedDivision("");
 
-    api.get(`/org/units/?company_id=${company_id}`).then(res => setUnits(res.data));
-    setDivisions([]); setDepartments([]);
+    api
+      .get(`/settings/units/?company_id=${company_id}`)
+      .then((res) => setUnits(res.data));
+    setDivisions([]);
+    setDepartments([]);
   };
 
   const loadDivisions = (unit_id) => {
     setSelectedUnit(unit_id);
-    api.get(`/org/divisions/?unit_id=${unit_id}`).then(res => setDivisions(res.data));
+    api
+      .get(`/settings/divisions/?unit_id=${unit_id}`)
+      .then((res) => setDivisions(res.data));
     setDepartments([]);
   };
 
   const loadDepartments = (division_id) => {
     setSelectedDivision(division_id);
-    api.get(`/org/departments/?division_id=${division_id}`).then(res => setDepartments(res.data));
+    api
+      .get(`/settings/departments/?division_id=${division_id}`)
+      .then((res) => setDepartments(res.data));
   };
 
   const saveDepartment = async () => {
     if (!selectedDivision) return alert("Select division");
     if (!name.trim()) return alert("Enter department name");
 
-    await api.post("/org/departments/", { name, division: selectedDivision });
+    await api.post("/settings/departments/", {
+      name,
+      division: selectedDivision,
+    });
     setName("");
     loadDepartments(selectedDivision);
   };
@@ -49,31 +59,54 @@ export default function DepartmentEntry() {
     <div className="p-6 space-y-4">
       <h1 className="text-xl font-bold">Department Entry</h1>
 
-      <select className="border p-2 w-full" onChange={(e) => loadUnits(e.target.value)}>
+      <select
+        className="border p-2 w-full"
+        onChange={(e) => loadUnits(e.target.value)}
+      >
         <option>Select Company</option>
-        {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        {companies.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
       </select>
 
-      <select disabled={!selectedCompany} className="border p-2 w-full"
+      <select
+        disabled={!selectedCompany}
+        className="border p-2 w-full"
         onChange={(e) => loadDivisions(e.target.value)}
       >
         <option>Select Unit</option>
-        {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+        {units.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.name}
+          </option>
+        ))}
       </select>
 
-      <select disabled={!selectedUnit} className="border p-2 w-full"
+      <select
+        disabled={!selectedUnit}
+        className="border p-2 w-full"
         onChange={(e) => loadDepartments(e.target.value)}
       >
         <option>Select Division</option>
-        {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+        {divisions.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.name}
+          </option>
+        ))}
       </select>
 
-      <input className="border p-2 w-full" placeholder="Department Name"
-        disabled={!selectedDivision} value={name}
+      <input
+        className="border p-2 w-full"
+        placeholder="Department Name"
+        disabled={!selectedDivision}
+        value={name}
         onChange={(e) => setName(e.target.value)}
       />
 
-      <button disabled={!selectedDivision}
+      <button
+        disabled={!selectedDivision}
         className="bg-blue-600 text-white px-4 py-2 rounded"
         onClick={saveDepartment}
       >
@@ -82,8 +115,10 @@ export default function DepartmentEntry() {
 
       <h2 className="text-lg font-semibold mt-4">Department List</h2>
       <ul>
-        {departments.map(dep => (
-          <li key={dep.id} className="border p-2">{dep.name}</li>
+        {departments.map((dep) => (
+          <li key={dep.id} className="border p-2">
+            {dep.name}
+          </li>
         ))}
       </ul>
     </div>

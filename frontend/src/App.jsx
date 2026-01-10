@@ -140,15 +140,15 @@ function App() {
 
         {/* Organization */}
         <Route path="/org-entry" element={<OrgEntryForm />} />
-        <Route path="/org/company" element={<CompanyEntry />} />
-        <Route path="/org/unit" element={<UnitEntry />} />
-        <Route path="/org/division" element={<DivisionEntry />} />
-        <Route path="/org/department" element={<DepartmentEntry />} />
-        <Route path="/org/section" element={<SectionEntry />} />
-        <Route path="/org/subsection" element={<SubsectionEntry />} />
-        <Route path="/org/floor" element={<FloorEntry />} />
-        <Route path="/org/line" element={<LineEntry />} />
-        <Route path="/org/table" element={<TableEntry />} />
+        <Route path="/settings/company" element={<CompanyEntry />} />
+        <Route path="/settings/unit" element={<UnitEntry />} />
+        <Route path="/settings/division" element={<DivisionEntry />} />
+        <Route path="/settings/department" element={<DepartmentEntry />} />
+        <Route path="/settings/section" element={<SectionEntry />} />
+        <Route path="/settings/subsection" element={<SubsectionEntry />} />
+        <Route path="/settings/floor" element={<FloorEntry />} />
+        <Route path="/settings/line" element={<LineEntry />} />
+        <Route path="/settings/table" element={<TableEntry />} />
 
         {/* Designation */}
         <Route path="/settings/designations" element={<DesignationEntry />} />

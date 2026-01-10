@@ -6,7 +6,7 @@ export default function CompanyEntry() {
   const [name, setName] = useState("");
 
   const loadCompanies = () => {
-    api.get("/org/companies/").then(res => setCompanies(res.data));
+    api.get("/settings/companies/").then((res) => setCompanies(res.data));
   };
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export default function CompanyEntry() {
   const saveCompany = async () => {
     if (!name.trim()) return alert("Enter company name");
 
-    await api.post("/org/companies/", { name });
+    await api.post("/settings/companies/", { name });
     setName("");
     loadCompanies();
   };
@@ -41,8 +41,10 @@ export default function CompanyEntry() {
 
       <h2 className="text-lg font-semibold mt-4">Company List</h2>
       <ul>
-        {companies.map(c => (
-          <li key={c.id} className="border p-2">{c.name}</li>
+        {companies.map((c) => (
+          <li key={c.id} className="border p-2">
+            {c.name}
+          </li>
         ))}
       </ul>
     </div>

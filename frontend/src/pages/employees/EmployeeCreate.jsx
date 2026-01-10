@@ -123,7 +123,7 @@ const EmployeeCreate = () => {
       nominee_mobile: "",
       nominee_nid: "",
       nominee_country: "",
-      nominee_division: "",
+      nominee_address_division: "",
       nominee_district: "",
       nominee_upazila: "",
       nominee_union: "",
@@ -134,7 +134,7 @@ const EmployeeCreate = () => {
       emg_contact_phone: "",
       emg_contact_relation: "",
       country: "",
-      division: "",
+      address_division: "",
       district: "",
       upazila: "",
       union: "",
@@ -262,7 +262,7 @@ const EmployeeCreate = () => {
 
   // Fetch organization units-table
   useEffect(() => {
-    api.get("/org/units/").then((res) => setUnits(res.data));
+    api.get("/settings/units/").then((res) => setUnits(res.data));
   }, []);
   useEffect(() => {
     if (!form.unit) {
@@ -271,7 +271,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/org/divisions/?unit_id=${form.unit}`)
+      .get(`/settings/divisions/?unit_id=${form.unit}`)
       .then((res) => setDivisions(res.data))
       .catch((err) => console.error(err));
   }, [form.unit]);
@@ -282,7 +282,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/org/departments/?division_id=${form.division}`)
+      .get(`/settings/departments/?division_id=${form.division}`)
       .then((res) => setDepartments(res.data))
       .catch((err) => console.error(err));
   }, [form.division]);
@@ -293,7 +293,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/org/sections/?department_id=${form.department}`)
+      .get(`/settings/sections/?department_id=${form.department}`)
       .then((res) => setSections(res.data))
       .catch((err) => console.error(err));
   }, [form.department]);
@@ -304,7 +304,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/org/subsections/?section_id=${form.section}`)
+      .get(`/settings/subsections/?section_id=${form.section}`)
       .then((res) => setSubsections(res.data));
   }, [form.section]);
   useEffect(() => {
@@ -314,7 +314,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/org/floors/?section_id=${form.section}`)
+      .get(`/settings/floors/?section_id=${form.section}`)
       .then((res) => setFloors(res.data));
   }, [form.section]);
   useEffect(() => {
@@ -324,7 +324,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/org/lines/?floor_id=${form.floor}`)
+      .get(`/settings/lines/?floor_id=${form.floor}`)
       .then((res) => setLines(res.data));
   }, [form.floor]);
 
@@ -907,6 +907,26 @@ const EmployeeCreate = () => {
         if ("id" in val) return String(val.id);
         return JSON.stringify(val);
       }
+
+      // If certain organizational fields are provided as an ID (string/number),
+      // convert to the corresponding name and send the name to the API. This
+      // makes the API robust (accepts names) and keeps the UI storing ids.
+      const fkFields = [
+  "unit",
+  "division",
+  "department",
+  "section",
+  "subsection",
+  "floor",
+  "line",
+  "designation",
+  "grade",
+  "reporting_to",
+];
+
+if (fkFields.includes(key)) {
+  return String(val).trim();
+}
 
       // ISO datetimes -> date part (for <input type="date"> fields)
       if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {

@@ -6,43 +6,49 @@ from settings_app.models import (
     EmploymentType,
     Designation,
     Grade,
-    Group,
-    Bank,
+    Unit,
+    Division,
+    Department,
+    Section,
+    SubSection,
+    Floor,
+    Line,
 )
 
 
 class Employee(models.Model):
-
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     code = models.CharField(max_length=20, unique=True)
-    employee_id = models.CharField(max_length=50, unique=True)
+    employee_id = models.CharField(max_length=50, unique=True, blank=True, null=True)  # Made optional
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50, blank=True)
     full_name_bangla = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=30, blank=True)
+    
+    # Organizational structure - ForeignKeys to settings_app models
     unit = models.ForeignKey(
-        "settings_app.Unit", on_delete=models.SET_NULL, null=True, blank=True
+        Unit, on_delete=models.SET_NULL, null=True, blank=True
     )
     division = models.ForeignKey(
-        "settings_app.Division", on_delete=models.SET_NULL, null=True, blank=True
+        Division, on_delete=models.SET_NULL, null=True, blank=True
     )
     department = models.ForeignKey(
-        "settings_app.Department", on_delete=models.SET_NULL, null=True, blank=True
+        Department, on_delete=models.SET_NULL, null=True, blank=True
     )
     section = models.ForeignKey(
-        "settings_app.Section", on_delete=models.SET_NULL, null=True, blank=True
+        Section, on_delete=models.SET_NULL, null=True, blank=True
     )
     subsection = models.ForeignKey(
-        "settings_app.SubSection", on_delete=models.SET_NULL, null=True, blank=True
+        SubSection, on_delete=models.SET_NULL, null=True, blank=True
     )
     floor = models.ForeignKey(
-        "settings_app.Floor", on_delete=models.SET_NULL, null=True, blank=True
+        Floor, on_delete=models.SET_NULL, null=True, blank=True
     )
     line = models.ForeignKey(
-        "settings_app.Line", on_delete=models.SET_NULL, null=True, blank=True
+        Line, on_delete=models.SET_NULL, null=True, blank=True
     )
     designation = models.ForeignKey(
-        "settings_app.Designation", on_delete=models.SET_NULL, null=True, blank=True
+        Designation, on_delete=models.SET_NULL, null=True, blank=True
     )
 
     # Basic
@@ -55,7 +61,7 @@ class Employee(models.Model):
     nationality = models.CharField(max_length=100, blank=True, null=True)
     nid_no = models.CharField(max_length=100, blank=True)
     birth_certificate = models.CharField(max_length=100, blank=True)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(blank=True)  # Removed unique constraint for flexibility
     blood_group = models.CharField(max_length=10, blank=True)
     marital_status = models.CharField(max_length=20, blank=True)
     spouse_name = models.CharField(max_length=100, blank=True)
@@ -67,7 +73,7 @@ class Employee(models.Model):
     nominee_mobile = models.CharField(max_length=30, blank=True)
     nominee_nid = models.CharField(max_length=100, blank=True)
     nominee_country = models.CharField(max_length=50, blank=True)
-    nominee_division = models.CharField(max_length=50, blank=True)
+    nominee_address_division = models.CharField(max_length=50, blank=True)  # Address division
     nominee_district = models.CharField(max_length=50, blank=True)
     nominee_upazila = models.CharField(max_length=50, blank=True)
     nominee_union = models.CharField(max_length=50, blank=True)
@@ -78,7 +84,7 @@ class Employee(models.Model):
     emg_contact_phone = models.CharField(max_length=30, blank=True)
     emg_contact_relation = models.CharField(max_length=50, blank=True)
     country = models.CharField(max_length=50, blank=True)
-    division = models.CharField(max_length=50, blank=True)
+    address_division = models.CharField(max_length=50, blank=True)  # Address division (not org)
     district = models.CharField(max_length=50, blank=True)
     upazila = models.CharField(max_length=50, blank=True)
     union = models.CharField(max_length=50, blank=True)
@@ -102,10 +108,10 @@ class Employee(models.Model):
     )
     group_name = models.CharField(max_length=100, blank=True)
     grade = models.ForeignKey(
-        "settings_app.Grade", on_delete=models.SET_NULL, null=True, blank=True
+        Grade, on_delete=models.SET_NULL, null=True, blank=True
     )
     device_id = models.CharField(max_length=100, blank=True)
-    join_date = models.DateField()
+    join_date = models.DateField(null=True, blank=True)  # Made optional
     confirm_date = models.DateField(null=True, blank=True)
     reporting_to = models.ForeignKey(
         "self",
@@ -140,43 +146,43 @@ class Employee(models.Model):
     pf_applicable = models.BooleanField(default=False)
     late_deduction = models.BooleanField(default=False)
     gross_salary = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True  # Increased max_digits
     )
     basic_salary = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     house_rent = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     medical_allowance = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     mobile_allowance = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     transport_allowance = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     conveyance_allowance = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     other_allowance = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     attendance_bonus = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     tax_deduction = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     insurance_deduction = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     stamp_deduction = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
     other_deduction = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
+        max_digits=15, decimal_places=2, null=True, blank=True
     )
 
     # Leave Policy
@@ -190,46 +196,10 @@ class Employee(models.Model):
     compensatory_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     unpaid_leave = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
-    # Job Experience (single fields kept for backwards compatibility)
-    job_company_name = models.CharField(max_length=200, blank=True)
-    job_department = models.CharField(max_length=100, blank=True)
-    job_designation = models.CharField(max_length=100, blank=True)
-    job_start_date = models.DateField(null=True, blank=True)
-    job_end_date = models.DateField(null=True, blank=True)
-    leave_reason = models.CharField(max_length=300, blank=True)
-
-    # Job Experience (store multiple entries)
-    job_experiences = models.JSONField(null=True, blank=True)
-
-    # Education (single fields kept for backwards compatibility)
-    degree_title = models.CharField(max_length=200, blank=True)
-    major_subject = models.CharField(max_length=200, blank=True)
-    institute_name = models.CharField(max_length=200, blank=True)
-    passing_year = models.CharField(max_length=4, blank=True)
-    education_board = models.CharField(max_length=100, blank=True)
-    result = models.CharField(max_length=100, blank=True)
-
-    # Education (store multiple entries)
-    educations = models.JSONField(null=True, blank=True)
-
-    # Training (single fields kept)
-    training_name = models.CharField(max_length=100, blank=True, null=True)
-    training_institute = models.CharField(max_length=50, blank=True, null=True)
-    institute_address = models.CharField(max_length=50, blank=True, null=True)
-    training_duration = models.CharField(max_length=50, blank=True, null=True)
-    training_result = models.CharField(max_length=50, blank=True, null=True)
-    remarks = models.CharField(max_length=50, blank=True, null=True)
-
-    # Training (store multiple entries)
-    trainings = models.JSONField(null=True, blank=True)
-
-    # Training
-    training_name = models.CharField(max_length=100, blank=True, null=True)
-    training_institute = models.CharField(max_length=50, blank=True, null=True)
-    institute_address = models.CharField(max_length=50, blank=True, null=True)
-    training_duration = models.CharField(max_length=50, blank=True, null=True)
-    training_result = models.CharField(max_length=50, blank=True, null=True)
-    remarks = models.CharField(max_length=50, blank=True, null=True)
+    # JSON fields for multiple entries
+    job_experiences = models.JSONField(default=list, blank=True, null=True)
+    educations = models.JSONField(default=list, blank=True, null=True)
+    trainings = models.JSONField(default=list, blank=True, null=True)
 
     # Documents upload
     emp_image = models.CharField(max_length=50, blank=True, null=True)
@@ -256,18 +226,21 @@ class Employee(models.Model):
     training_certificate_docs = models.FileField(
         upload_to="employee_docs/", null=True, blank=True
     )
-    others_docs = models.CharField(max_length=50, blank=True, null=True)
-    others_docs_file = models.FileField(
-        upload_to="employee_docs/", null=True, blank=True
-    )
 
     # system auto
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return f"{self.code} - {self.first_name} {self.last_name}".strip()
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
 
 
 class EmployeeOtherDocument(models.Model):
