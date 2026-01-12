@@ -912,21 +912,21 @@ const EmployeeCreate = () => {
       // convert to the corresponding name and send the name to the API. This
       // makes the API robust (accepts names) and keeps the UI storing ids.
       const fkFields = [
-  "unit",
-  "division",
-  "department",
-  "section",
-  "subsection",
-  "floor",
-  "line",
-  "designation",
-  "grade",
-  "reporting_to",
-];
+        "unit",
+        "division",
+        "department",
+        "section",
+        "subsection",
+        "floor",
+        "line",
+        "designation",
+        "grade",
+        "reporting_to",
+      ];
 
-if (fkFields.includes(key)) {
-  return String(val).trim();
-}
+      if (fkFields.includes(key)) {
+        return String(val).trim();
+      }
 
       // ISO datetimes -> date part (for <input type="date"> fields)
       if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
@@ -1160,7 +1160,7 @@ if (fkFields.includes(key)) {
                   <div className="flex-1 relative">
                     <input
                       name="code"
-                      className={`border p-2 rounded w-full ${
+                      className={`border border-gray-300 p-2 rounded w-full ${
                         formErrors.code || codeError
                           ? "border-red-500"
                           : "border-gray-300"
@@ -1204,7 +1204,7 @@ if (fkFields.includes(key)) {
                 </label>
                 <input
                   name="employee_id"
-                  className={`border p-2 rounded w-full ${
+                  className={`border border-gray-300 p-2 rounded w-full ${
                     formErrors.employee_id
                       ? "border-red-500"
                       : "border-gray-300"
@@ -1227,7 +1227,7 @@ if (fkFields.includes(key)) {
                 </label>
                 <input
                   name="first_name"
-                  className={`border p-2 rounded w-full ${
+                  className={`border border-gray-300 p-2 rounded w-full ${
                     formErrors.first_name ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="First Name"
@@ -1466,7 +1466,7 @@ if (fkFields.includes(key)) {
                 </label>
                 <input
                   name="father_name"
-                  className={`border p-2 rounded w-full ${
+                  className={`border border-gray-300 p-2 rounded w-full ${
                     formErrors.father_name
                       ? "border-red-500"
                       : "border-gray-300"
@@ -1503,7 +1503,7 @@ if (fkFields.includes(key)) {
                 </label>
                 <input
                   name="mother_name"
-                  className={`border p-2 rounded w-full ${
+                  className={`border border-gray-300 p-2 rounded w-full ${
                     formErrors.mother_name
                       ? "border-red-500"
                       : "border-gray-300"
@@ -1580,7 +1580,7 @@ if (fkFields.includes(key)) {
                 </label>
                 <input
                   name="nid_no"
-                  className={`border p-2 rounded w-full ${
+                  className={`border border-gray-300 p-2 rounded w-full ${
                     formErrors.nid_no ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="NID Number"
@@ -1601,7 +1601,7 @@ if (fkFields.includes(key)) {
                 </label>
                 <input
                   name="birth_certificate"
-                  className={`border p-2 rounded w-full ${
+                  className={`border border-gray-300 p-2 rounded w-full ${
                     formErrors.birth_certificate
                       ? "border-red-500"
                       : "border-gray-300"
@@ -1623,7 +1623,7 @@ if (fkFields.includes(key)) {
                 <input
                   name="email"
                   type="email"
-                  className={`border p-2 rounded w-full ${
+                  className={`border border-gray-300 p-2 rounded w-full ${
                     formErrors.email ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Email"
@@ -1827,14 +1827,14 @@ if (fkFields.includes(key)) {
                   Nominee Division
                 </label>
                 <select
-                  name="nominee_division"
+                  name="nominee_address_division"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.nominee_division}
+                  value={form.nominee_address_division}
                   onChange={handleChange}
                 >
                   <option value="">Select Division</option>
                   {bdDivisions.map((div) => (
-                    <option key={div.id} value={div.id}>
+                    <option key={div.id} value={div.name}>
                       {div.name}
                     </option>
                   ))}
@@ -2001,14 +2001,14 @@ if (fkFields.includes(key)) {
                   Division
                 </label>
                 <select
-                  name="division"
+                  name="address_division"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.division}
+                  value={form.address_division}
                   onChange={handleChange}
                 >
                   <option value="">Select Division</option>
                   {bdDivisions.map((d) => (
-                    <option key={d.id} value={d.id}>
+                    <option key={d.id} value={d.name}>
                       {d.name}
                     </option>
                   ))}
@@ -2652,7 +2652,7 @@ if (fkFields.includes(key)) {
                   name="effective_date"
                   value={form.effective_date}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                 />
               </div>
               {/* Salary Policy */}
@@ -2664,7 +2664,7 @@ if (fkFields.includes(key)) {
                   name="salary_policy"
                   value={form.salary_policy}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Salary Policy"
                 />
               </div>
@@ -2677,7 +2677,7 @@ if (fkFields.includes(key)) {
                   name="pf_applicable"
                   value={String(form.pf_applicable)}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="PF Applicable"
                 >
                   <option value="">Select PF Applicable</option>
@@ -2694,7 +2694,7 @@ if (fkFields.includes(key)) {
                   name="late_deduction"
                   value={String(form.late_deduction)}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Late Deduction"
                 >
                   <option value="">Select Late Deduction</option>
@@ -2712,7 +2712,7 @@ if (fkFields.includes(key)) {
                   name="gross_salary"
                   value={form.gross_salary}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Gross Salary"
                 />
               </div>
@@ -2726,7 +2726,7 @@ if (fkFields.includes(key)) {
                   name="basic_salary"
                   value={form.basic_salary}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Basic Salary"
                 />
               </div>
@@ -2740,7 +2740,7 @@ if (fkFields.includes(key)) {
                   name="house_rent"
                   value={form.house_rent}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="House Rent"
                 />
               </div>
@@ -2754,7 +2754,7 @@ if (fkFields.includes(key)) {
                   name="medical_allowance"
                   value={form.medical_allowance}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Medical Allowance"
                 />
               </div>
@@ -2768,7 +2768,7 @@ if (fkFields.includes(key)) {
                   name="mobile_allowance"
                   value={form.mobile_allowance}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Mobile Allowance"
                 />
               </div>
@@ -2782,7 +2782,7 @@ if (fkFields.includes(key)) {
                   name="transport_allowance"
                   value={form.transport_allowance}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Transport Allowance"
                 />
               </div>
@@ -2796,7 +2796,7 @@ if (fkFields.includes(key)) {
                   name="conveyance_allowance"
                   value={form.conveyance_allowance}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Conveyance Allowance"
                 />
               </div>
@@ -2810,7 +2810,7 @@ if (fkFields.includes(key)) {
                   name="other_allowance"
                   value={form.other_allowance}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Other Allowances"
                 />
               </div>
@@ -2824,7 +2824,7 @@ if (fkFields.includes(key)) {
                   name="attendance_bonus"
                   value={form.attendance_bonus}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Attendance Bonus"
                 />
               </div>
@@ -2838,7 +2838,7 @@ if (fkFields.includes(key)) {
                   name="tax_deduction"
                   value={form.tax_deduction}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Tax deduction"
                 />
               </div>
@@ -2852,7 +2852,7 @@ if (fkFields.includes(key)) {
                   name="insurance_deduction"
                   value={form.insurance_deduction}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Insurance deduction"
                 />
               </div>
@@ -2866,7 +2866,7 @@ if (fkFields.includes(key)) {
                   name="stamp_deduction"
                   value={form.stamp_deduction}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Stamp deduction"
                 />
               </div>
@@ -2880,7 +2880,7 @@ if (fkFields.includes(key)) {
                   name="other_deduction"
                   value={form.other_deduction}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Other deductions"
                 />
               </div>
@@ -2900,7 +2900,7 @@ if (fkFields.includes(key)) {
                   name="leave_effective"
                   value={form.leave_effective}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                 />
               </div>
               {/* Casual Leave */}
@@ -2912,7 +2912,7 @@ if (fkFields.includes(key)) {
                   name="casual_leave"
                   value={form.casual_leave}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Casual Leave"
                 />
               </div>
@@ -2925,7 +2925,7 @@ if (fkFields.includes(key)) {
                   name="sick_leave"
                   value={form.sick_leave}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Sick Leave"
                 />
               </div>
@@ -2938,7 +2938,7 @@ if (fkFields.includes(key)) {
                   name="earned_leave"
                   value={form.earned_leave}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Earned Leave"
                 />
               </div>
@@ -2951,7 +2951,7 @@ if (fkFields.includes(key)) {
                   name="maternity_leave"
                   value={form.maternity_leave}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Maternity Leave"
                 />
               </div>
@@ -2965,7 +2965,7 @@ if (fkFields.includes(key)) {
                   name="paternity_leave"
                   value={form.paternity_leave}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder=" Paternity Leave"
                 />
               </div>
@@ -2979,7 +2979,7 @@ if (fkFields.includes(key)) {
                   name="funeral_leave"
                   value={form.funeral_leave}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Funeral Leave"
                 />
               </div>
@@ -2993,7 +2993,7 @@ if (fkFields.includes(key)) {
                   name="compensatory_leave"
                   value={form.compensatory_leave}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Compensatory Leave"
                 />
               </div>
@@ -3007,7 +3007,7 @@ if (fkFields.includes(key)) {
                   name="unpaid_leave"
                   value={form.unpaid_leave}
                   onChange={handleChange}
-                  className="border p-2 rounded w-full"
+                  className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Unpaid Leave"
                 />
               </div>
@@ -3054,7 +3054,7 @@ if (fkFields.includes(key)) {
                       name="job_company_name"
                       value={exp.job_company_name}
                       onChange={(e) => handleJobChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Company Name"
                     />
                   </div>
@@ -3067,7 +3067,7 @@ if (fkFields.includes(key)) {
                       name="job_department"
                       value={exp.job_department}
                       onChange={(e) => handleJobChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Department"
                     />
                   </div>
@@ -3080,7 +3080,7 @@ if (fkFields.includes(key)) {
                       name="job_designation"
                       value={exp.job_designation}
                       onChange={(e) => handleJobChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Designation"
                     />
                   </div>
@@ -3094,7 +3094,7 @@ if (fkFields.includes(key)) {
                       name="job_start_date"
                       value={exp.job_start_date}
                       onChange={(e) => handleJobChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                     />
                   </div>
 
@@ -3107,7 +3107,7 @@ if (fkFields.includes(key)) {
                       name="job_end_date"
                       value={exp.job_end_date}
                       onChange={(e) => handleJobChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                     />
                   </div>
 
@@ -3119,7 +3119,7 @@ if (fkFields.includes(key)) {
                       name="leave_reason"
                       value={exp.leave_reason}
                       onChange={(e) => handleJobChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Reason for Leaving"
                     />
                   </div>
@@ -3168,7 +3168,7 @@ if (fkFields.includes(key)) {
                       name="degree_title"
                       value={edu.degree_title}
                       onChange={(e) => handleEducationChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Degree Title"
                     />
                   </div>
@@ -3181,7 +3181,7 @@ if (fkFields.includes(key)) {
                       name="major_subject"
                       value={edu.major_subject}
                       onChange={(e) => handleEducationChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Major Subject"
                     />
                   </div>
@@ -3194,7 +3194,7 @@ if (fkFields.includes(key)) {
                       name="institute_name"
                       value={edu.institute_name}
                       onChange={(e) => handleEducationChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Institute Name"
                     />
                   </div>
@@ -3207,7 +3207,7 @@ if (fkFields.includes(key)) {
                       name="passing_year"
                       value={edu.passing_year}
                       onChange={(e) => handleEducationChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Passing Year"
                     />
                   </div>
@@ -3220,7 +3220,7 @@ if (fkFields.includes(key)) {
                       name="education_board"
                       value={edu.education_board}
                       onChange={(e) => handleEducationChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Education Board"
                     />
                   </div>
@@ -3233,7 +3233,7 @@ if (fkFields.includes(key)) {
                       name="result"
                       value={edu.result}
                       onChange={(e) => handleEducationChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Result"
                     />
                   </div>
@@ -3282,7 +3282,7 @@ if (fkFields.includes(key)) {
                       name="training_name"
                       value={edu.training_name}
                       onChange={(e) => handleTrainingChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Training Name"
                     />
                   </div>
@@ -3295,7 +3295,7 @@ if (fkFields.includes(key)) {
                       name="training_institute"
                       value={edu.training_institute}
                       onChange={(e) => handleTrainingChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Institute"
                     />
                   </div>
@@ -3308,7 +3308,7 @@ if (fkFields.includes(key)) {
                       name="institute_address"
                       value={edu.institute_address}
                       onChange={(e) => handleTrainingChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Institute Address"
                     />
                   </div>
@@ -3321,7 +3321,7 @@ if (fkFields.includes(key)) {
                       name="training_duration"
                       value={edu.training_duration}
                       onChange={(e) => handleTrainingChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Training Duration"
                     />
                   </div>
@@ -3334,7 +3334,7 @@ if (fkFields.includes(key)) {
                       name="training_result"
                       value={edu.training_result}
                       onChange={(e) => handleTrainingChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Result"
                     />
                   </div>
@@ -3347,7 +3347,7 @@ if (fkFields.includes(key)) {
                       name="remarks"
                       value={edu.remarks}
                       onChange={(e) => handleTrainingChange(index, e)}
-                      className="border p-2 rounded w-full"
+                      className="border border-gray-300 p-2 rounded w-full"
                       placeholder="Remarks"
                     />
                   </div>

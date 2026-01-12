@@ -24,9 +24,8 @@ const ManualAttendance = () => {
       <h1 className="text-xl font-semibold">Manual Attendance</h1>
 
       <div className="bg-white p-4 rounded-xl shadow-sm space-y-4">
-
         <select
-          className="border p-2 rounded w-full"
+          className="border border-gray-300 p-2 rounded w-full"
           value={form.employee}
           onChange={(e) => setForm({ ...form, employee: e.target.value })}
         >
@@ -40,21 +39,21 @@ const ManualAttendance = () => {
 
         <input
           type="date"
-          className="border p-2 rounded w-full"
+          className="border border-gray-300 p-2 rounded w-full"
           value={form.date}
           onChange={(e) => setForm({ ...form, date: e.target.value })}
         />
 
         <input
           type="time"
-          className="border p-2 rounded w-full"
+          className="border border-gray-300 p-2 rounded w-full"
           value={form.in_time}
           onChange={(e) => setForm({ ...form, in_time: e.target.value })}
         />
 
         <input
           type="time"
-          className="border p-2 rounded w-full"
+          className="border border-gray-300 p-2 rounded w-full"
           value={form.out_time}
           onChange={(e) => setForm({ ...form, out_time: e.target.value })}
         />
