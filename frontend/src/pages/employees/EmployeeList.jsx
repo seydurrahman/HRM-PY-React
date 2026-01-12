@@ -181,7 +181,7 @@ const EmployeeList = () => {
       <div className="flex gap-4 items-end mt-4 mb-2 flex-col">
         <div className="w-2/4 block mx-auto">
           <input
-            className="border-2 border-purple-600 p-2 w-full rounded cursor-pointer"
+            className="border border-purple-600 p-2 w-full rounded cursor-pointer"
             placeholder={`Search.....`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

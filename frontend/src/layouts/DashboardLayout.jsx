@@ -8,7 +8,6 @@ const DashboardLayout = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("access_token"); // ✅ Correct key
-
     if (!token) {
       window.location.href = "/login";   // Redirect only once
       return;
