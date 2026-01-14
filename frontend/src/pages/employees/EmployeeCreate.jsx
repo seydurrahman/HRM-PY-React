@@ -60,7 +60,7 @@ const EmployeeCreate = () => {
   ]);
 
   const [otherDocs, setOtherDocs] = useState([{ title: "", file: null }]);
-
+  // Company Organization flow
   const [units, setUnits] = useState([]);
   const [divisions, setDivisions] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -108,7 +108,7 @@ const EmployeeCreate = () => {
       mother_name: "",
       m_bangla_name: "",
       religion: "",
-      nationality: "",
+      nationality: "Bangladesh",
       nid_no: "",
       birth_certificate: "",
       email: "",
@@ -1614,11 +1614,11 @@ const EmployeeCreate = () => {
                 <select
                   name="religion"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.religion}
+                  value={form.religion === "" ? "Islam" : form.religion}
                   onChange={handleChange}
                 >
-                  <option value="">Select Religion</option>
                   <option value="Islam">Islam</option>
+                  <option value="">Select Religion</option>
                   <option value="Hindu">Hindu</option>
                   <option value="Christian">Christian</option>
                   <option value="Buddhist">Buddhist</option>
@@ -1635,7 +1635,6 @@ const EmployeeCreate = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                   value={form.nationality}
                   onChange={handleChange}
-                  defuldtValue="Bangladesh"
                 >
                   <option value="">Select Nationality</option>
                   {countries.map((c, index) => (
@@ -1834,7 +1833,7 @@ const EmployeeCreate = () => {
                   value={form.nominee_relation}
                   onChange={handleChange}
                 >
-                  <option value="">Select Marital Status</option>
+                  <option value="">Select Relation</option>
                   <option value="single">Mother</option>
                   <option value="married">Father</option>
                   <option value="divorced">Brother</option>
@@ -1882,9 +1881,8 @@ const EmployeeCreate = () => {
                 <select
                   name="nominee_country"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.nominee_country}
+                  value={form.nominee_country || "Bangladesh"}
                   onChange={handleChange}
-                  defuldtValue="Bangladesh"
                 >
                   <option value="">Select Nationality</option>
                   {countries.map((n_c, index) => (
@@ -2056,9 +2054,8 @@ const EmployeeCreate = () => {
                 <select
                   name="country"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.country}
+                  value={form.country || "Bangladesh"}
                   onChange={handleChange}
-                  defuldtValue="Bangladesh"
                 >
                   <option value="">Select Nationality</option>
                   {countries.map((c, index) => (
@@ -2437,9 +2434,8 @@ const EmployeeCreate = () => {
                 <select
                   name="shift"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.shift}
+                  value={form.shift || "morning"}
                   onChange={handleChange}
-                  defaultValue="morning"
                 >
                   <option value="">Select Shift</option>
                   <option value="morning">General(8am-5pm)</option>
@@ -2455,9 +2451,8 @@ const EmployeeCreate = () => {
                 <select
                   name="weekends"
                   className="border border-gray-300 p-2 rounded w-full"
-                  value={form.weekends}
+                  value={form.weekends || "friday"}
                   onChange={handleChange}
-                  defaultValue="friday"
                 >
                   <option value="">Select Weekend</option>
                   <option value="friday">Friday</option>
