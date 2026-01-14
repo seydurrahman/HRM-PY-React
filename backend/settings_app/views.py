@@ -1,17 +1,44 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+
 # Remove: from rest_framework.viewsets import ReadOnlyModelViewSet
 from .models import (
-    Unit, Division, Department, Section, SubSection, Floor, Line,
-    Grade, Designation, Group, Bank,
-    SalarySetting, PFSetting, OTSetting
+    Company,
+    Unit,
+    Division,
+    Department,
+    Section,
+    SubSection,
+    Floor,
+    Line,
+    Table,
+    Grade,
+    Designation,
+    Group,
+    Bank,
+    SalarySetting,
+    PFSetting,
+    OTSetting,
 )
 from .serializers import (
-    UnitSerializer, DivisionSerializer, DepartmentSerializer,
-    SectionSerializer, SubSectionSerializer, FloorSerializer, LineSerializer,
-    GradeSerializer, DesignationSerializer, GroupSerializer, BankSerializer,
-    SalarySettingSerializer, PFSettingSerializer, OTSettingSerializer
+    CompanySerializer,
+    UnitSerializer,
+    DivisionSerializer,
+    DepartmentSerializer,
+    SectionSerializer,
+    SubSectionSerializer,
+    FloorSerializer,
+    LineSerializer,
+    TableSerializer,
+    GradeSerializer,
+    DesignationSerializer,
+    GroupSerializer,
+    BankSerializer,
+    SalarySettingSerializer,
+    PFSettingSerializer,
+    OTSettingSerializer,
 )
+
 
 # Change ALL ReadOnlyModelViewSet to ModelViewSet for organizational structure
 class UnitViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
@@ -19,33 +46,76 @@ class UnitViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
     serializer_class = UnitSerializer
     permission_classes = [IsAuthenticated]  # Added permission
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        company = self.request.query_params.get(
+            "company_id"
+        ) or self.request.query_params.get("company")
+        return qs.filter(company_id=company) if company else qs
+
 
 class DivisionViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
+    queryset = Division.objects.all()
     serializer_class = DivisionSerializer
     permission_classes = [IsAuthenticated]  # Added permission
 
     def get_queryset(self):
-        qs = Division.objects.all()
+        qs = super().get_queryset()
         unit = self.request.query_params.get("unit")
         return qs.filter(unit_id=unit) if unit else qs
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
+    queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     permission_classes = [IsAuthenticated]  # Added permission
 
     def get_queryset(self):
-        qs = Department.objects.all()
+        qs = super().get_queryset()
         division = self.request.query_params.get("division")
         return qs.filter(division_id=division) if division else qs
 
 
 class SectionViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
+    queryset = Section.objects.all()
     serializer_class = SectionSerializer
     permission_classes = [IsAuthenticated]  # Added permission
 
     def get_queryset(self):
-        qs = Section.objects.all()
+        qs = super().get_queryset()
+        department = self.request.query_params.get("department")
+        return qs.filter(department_id=department) if department else qs
+
+
+class SubSectionViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
+    queryset = SubSection.objects.all()
+    serializer_class = SubSectionSerializer
+    permission_classes = [IsAuthenticated]  # Added permission
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        section = self.request.query_params.get("section")
+        return qs.filter(section_id=section) if section else qs
+
+
+class DepartmentViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticated]  # Added permission
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        division = self.request.query_params.get("division")
+        return qs.filter(division_id=division) if division else qs
+
+
+class SectionViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
+    queryset = Section.objects.all()
+    serializer_class = SectionSerializer
+    permission_classes = [IsAuthenticated]  # Added permission
+
+    def get_queryset(self):
+        qs = super().get_queryset()
         department = self.request.query_params.get("department")
         return qs.filter(department_id=department) if department else qs
 
@@ -60,23 +130,41 @@ class SubSectionViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelVie
         return qs.filter(section_id=section) if section else qs
 
 
-class FloorViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
-    queryset = Floor.objects.all()
+class FloorViewSet(viewsets.ModelViewSet):
+    queryset = Floor.objects.all()  # ← ADD THIS
     serializer_class = FloorSerializer
-    permission_classes = [IsAuthenticated]  # Added permission
-
-
-class LineViewSet(viewsets.ModelViewSet):  # Changed from ReadOnlyModelViewSet
-    serializer_class = LineSerializer
-    permission_classes = [IsAuthenticated]  # Added permission
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = Line.objects.all()
+        qs = super().get_queryset()
+        section = self.request.query_params.get("section")
+        return qs.filter(section_id=section) if section else qs
+
+
+class LineViewSet(viewsets.ModelViewSet):
+    queryset = Line.objects.all()  # ← ADD THIS
+    serializer_class = LineSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
         floor = self.request.query_params.get("floor")
         return qs.filter(floor_id=floor) if floor else qs
 
 
 # These are already ModelViewSet, so keep them as is but ensure permissions
+class CompanyViewSet(viewsets.ModelViewSet):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+    permission_classes = [IsAuthenticated]
+
+
+class TableViewSet(viewsets.ModelViewSet):
+    queryset = Table.objects.all()
+    serializer_class = TableSerializer
+    permission_classes = [IsAuthenticated]
+
+
 class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all().order_by("level")
     serializer_class = GradeSerializer

@@ -271,7 +271,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/settings/divisions/?unit_id=${form.unit}`)
+      .get(`/settings/divisions/?unit=${form.unit}`)
       .then((res) => setDivisions(res.data))
       .catch((err) => console.error(err));
   }, [form.unit]);
@@ -282,7 +282,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/settings/departments/?division_id=${form.division}`)
+      .get(`/settings/departments/?division=${form.division}`)
       .then((res) => setDepartments(res.data))
       .catch((err) => console.error(err));
   }, [form.division]);
@@ -293,7 +293,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/settings/sections/?department_id=${form.department}`)
+      .get(`/settings/sections/?department=${form.department}`)
       .then((res) => setSections(res.data))
       .catch((err) => console.error(err));
   }, [form.department]);
@@ -304,7 +304,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/settings/subsections/?section_id=${form.section}`)
+      .get(`/settings/subsections/?section=${form.section}`)
       .then((res) => setSubsections(res.data));
   }, [form.section]);
   useEffect(() => {
@@ -314,7 +314,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/settings/floors/?section_id=${form.section}`)
+      .get(`/settings/floors/?section=${form.section}`)
       .then((res) => setFloors(res.data));
   }, [form.section]);
   useEffect(() => {
@@ -324,7 +324,7 @@ const EmployeeCreate = () => {
     }
 
     api
-      .get(`/settings/lines/?floor_id=${form.floor}`)
+      .get(`/settings/lines/?floor=${form.floor}`)
       .then((res) => setLines(res.data));
   }, [form.floor]);
 
@@ -634,6 +634,7 @@ const EmployeeCreate = () => {
   };
 
   // Auto-generate employee code
+
   useEffect(() => {
     const generateEmployeeCode = async () => {
       setIsLoadingCode(true);
@@ -643,8 +644,8 @@ const EmployeeCreate = () => {
           return;
         }
 
+        // Try to get next sequential code from API
         const response = await api.get("/employees-next-code/");
-        console.log("API Response:", response.data);
 
         if (response.data && response.data.next_code) {
           setForm((prev) => ({
@@ -652,12 +653,49 @@ const EmployeeCreate = () => {
             code: response.data.next_code,
           }));
         } else {
-          setForm((prev) => ({ ...prev, code: "EMP-0001" }));
+          // Fallback: get existing codes and calculate next
+          const response = await api.get("/employees/");
+          const existingCodes = response.data.map((emp) => emp.code);
+
+          // Extract numeric parts from EMP-XXXX codes
+          const numbers = existingCodes
+            .filter((code) => code && code.startsWith("EMP-"))
+            .map((code) => {
+              const numPart = code.replace("EMP-", "");
+              return parseInt(numPart) || 0;
+            });
+
+          const maxNum = numbers.length > 0 ? Math.max(...numbers) : 0;
+          const nextCode = `EMP-${(maxNum + 1).toString().padStart(4, "0")}`;
+
+          setForm((prev) => ({
+            ...prev,
+            code: nextCode,
+          }));
         }
       } catch (error) {
         console.error("Error generating employee code:", error);
-        const fallbackCode = `EMP-${Date.now().toString().slice(-4)}`;
-        setForm((prev) => ({ ...prev, code: fallbackCode }));
+
+        // Even if API fails, try to create sequential code
+        try {
+          const response = await api.get("/employees/");
+          const existingCodes = response.data.map((emp) => emp.code);
+          const numbers = existingCodes
+            .filter((code) => code && code.startsWith("EMP-"))
+            .map((code) => parseInt(code.replace("EMP-", "")) || 0);
+
+          const maxNum = numbers.length > 0 ? Math.max(...numbers) : 0;
+          const nextCode = `EMP-${(maxNum + 1).toString().padStart(4, "0")}`;
+
+          setForm((prev) => ({
+            ...prev,
+            code: nextCode,
+          }));
+        } catch (err) {
+          // Final fallback
+          const fallbackCode = "EMP-0001";
+          setForm((prev) => ({ ...prev, code: fallbackCode }));
+        }
       } finally {
         setIsLoadingCode(false);
       }
@@ -925,7 +963,42 @@ const EmployeeCreate = () => {
       ];
 
       if (fkFields.includes(key)) {
-        return String(val).trim();
+        const s = String(val).trim();
+        if (!s) return undefined;
+        // If value looks like a numeric id, map to name via loaded lists; otherwise assume it's already a name
+        const isId = /^\d+$/.test(s);
+        const findName = (list) => {
+          if (!list) return s;
+          if (isId) {
+            const f = list.find((x) => String(x.id) === s);
+            if (f) return f.name;
+          }
+          return s;
+        };
+
+        switch (key) {
+          case "unit":
+            return findName(units);
+          case "division":
+            return findName(divisions);
+          case "department":
+            return findName(departments);
+          case "section":
+            return findName(sections);
+          case "subsection":
+            return findName(subsections);
+          case "floor":
+            return findName(floors);
+          case "line":
+            return findName(lines);
+          case "designation":
+            return findName(designations);
+          case "grade":
+            return findName(grades);
+          // Keep reporting_to as id/name as-is (it's a user reference)
+          default:
+            return s;
+        }
       }
 
       // ISO datetimes -> date part (for <input type="date"> fields)

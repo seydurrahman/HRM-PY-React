@@ -69,7 +69,13 @@ export default function FloorEntry() {
     if (!selectedSection) return alert("Select section");
     if (!name.trim()) return alert("Enter floor name");
 
-    await api.post("/settings/floors/", { name, section: selectedSection });
+    const secObj = sections.find(
+      (s) => String(s.id) === String(selectedSection)
+    );
+    await api.post("/settings/floors/", {
+      name,
+      section: secObj ? secObj.name : selectedSection,
+    });
     setName("");
     loadFloors(selectedSection);
   };

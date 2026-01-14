@@ -69,7 +69,11 @@ export default function TableEntry() {
     if (!selectedFloor) return alert("Select floor");
     if (!name.trim()) return alert("Enter table name");
 
-    await api.post("/settings/tables/", { name, floor: selectedFloor });
+    const fObj = floors.find((f) => String(f.id) === String(selectedFloor));
+    await api.post("/settings/tables/", {
+      name,
+      floor: fObj ? fObj.name : selectedFloor,
+    });
     setName("");
     loadTables(selectedFloor);
   };

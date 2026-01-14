@@ -19,16 +19,16 @@ from settings_app.models import (
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     code = models.CharField(max_length=20, unique=True)
-    employee_id = models.CharField(max_length=50, unique=True, blank=True, null=True)  # Made optional
+    employee_id = models.CharField(
+        max_length=50, unique=True, blank=True, null=True
+    )  # Made optional
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50, blank=True)
     full_name_bangla = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=30, blank=True)
-    
+
     # Organizational structure - ForeignKeys to settings_app models
-    unit = models.ForeignKey(
-        Unit, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, null=True, blank=True)
     division = models.ForeignKey(
         Division, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -41,12 +41,9 @@ class Employee(models.Model):
     subsection = models.ForeignKey(
         SubSection, on_delete=models.SET_NULL, null=True, blank=True
     )
-    floor = models.ForeignKey(
-        Floor, on_delete=models.SET_NULL, null=True, blank=True
-    )
-    line = models.ForeignKey(
-        Line, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    floor = models.ForeignKey(Floor, on_delete=models.SET_NULL, null=True, blank=True)
+    line = models.ForeignKey(Line, on_delete=models.SET_NULL, null=True, blank=True)
+
     designation = models.ForeignKey(
         Designation, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -73,7 +70,9 @@ class Employee(models.Model):
     nominee_mobile = models.CharField(max_length=30, blank=True)
     nominee_nid = models.CharField(max_length=100, blank=True)
     nominee_country = models.CharField(max_length=50, blank=True)
-    nominee_address_division = models.CharField(max_length=50, blank=True)  # Address division
+    nominee_address_division = models.CharField(
+        max_length=50, blank=True
+    )  # Address division
     nominee_district = models.CharField(max_length=50, blank=True)
     nominee_upazila = models.CharField(max_length=50, blank=True)
     nominee_union = models.CharField(max_length=50, blank=True)
@@ -84,7 +83,9 @@ class Employee(models.Model):
     emg_contact_phone = models.CharField(max_length=30, blank=True)
     emg_contact_relation = models.CharField(max_length=50, blank=True)
     country = models.CharField(max_length=50, blank=True)
-    address_division = models.CharField(max_length=50, blank=True)  # Address division (not org)
+    address_division = models.CharField(
+        max_length=50, blank=True
+    )  # Address division (not org)
     district = models.CharField(max_length=50, blank=True)
     upazila = models.CharField(max_length=50, blank=True)
     union = models.CharField(max_length=50, blank=True)
@@ -107,9 +108,7 @@ class Employee(models.Model):
         max_length=2, choices=EmploymentType.choices, default=EmploymentType.FULL_TIME
     )
     group_name = models.CharField(max_length=100, blank=True)
-    grade = models.ForeignKey(
-        Grade, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, blank=True)
     device_id = models.CharField(max_length=100, blank=True)
     join_date = models.DateField(null=True, blank=True)  # Made optional
     confirm_date = models.DateField(null=True, blank=True)
@@ -203,7 +202,7 @@ class Employee(models.Model):
 
     # Documents upload
     emp_image = models.CharField(max_length=50, blank=True, null=True)
-    emp_image_docs = models.FileField(upload_to="employee_docs/", null=True, blank=True)                                       
+    emp_image_docs = models.FileField(upload_to="employee_docs/", null=True, blank=True)
     emp_id = models.CharField(max_length=50, blank=True, null=True)
     emp_id_docs = models.FileField(upload_to="employee_docs/", null=True, blank=True)
     emp_birthcertificate = models.CharField(max_length=50, blank=True, null=True)
@@ -233,7 +232,7 @@ class Employee(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.code} - {self.first_name} {self.last_name}".strip()

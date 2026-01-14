@@ -23,9 +23,12 @@ export default function UnitEntry() {
     if (!selectedCompany) return alert("Select company");
     if (!name.trim()) return alert("Enter unit name");
 
+    const comp = companies.find(
+      (c) => String(c.id) === String(selectedCompany)
+    );
     await api.post("/settings/units/", {
       name,
-      company: selectedCompany,
+      company: comp ? comp.name : selectedCompany,
     });
 
     setName("");

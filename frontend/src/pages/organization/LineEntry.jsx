@@ -83,7 +83,11 @@ export default function LineEntry() {
     if (!selectedFloor) return alert("Select floor");
     if (!name.trim()) return alert("Enter line name");
 
-    await api.post("/settings/lines/", { name, floor: selectedFloor });
+    const fObj = floors.find((f) => String(f.id) === String(selectedFloor));
+    await api.post("/settings/lines/", {
+      name,
+      floor: fObj ? fObj.name : selectedFloor,
+    });
     setName("");
     loadLines(selectedFloor);
   };

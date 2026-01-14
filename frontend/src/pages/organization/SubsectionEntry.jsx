@@ -69,9 +69,12 @@ export default function SubsectionEntry() {
     if (!selectedSection) return alert("Select section");
     if (!name.trim()) return alert("Enter subsection name");
 
+    const secObj = sections.find(
+      (s) => String(s.id) === String(selectedSection)
+    );
     await api.post("/settings/subsections/", {
       name,
-      section: selectedSection,
+      section: secObj ? secObj.name : selectedSection,
     });
     setName("");
     loadSubsections(selectedSection);

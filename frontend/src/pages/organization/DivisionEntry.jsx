@@ -35,9 +35,11 @@ export default function DivisionEntry() {
     if (!selectedUnit) return alert("Select unit");
     if (!name.trim()) return alert("Enter division name");
 
+    // Send parent as name (backend accepts name or id)
+    const unitObj = units.find((u) => String(u.id) === String(selectedUnit));
     await api.post("/settings/divisions/", {
       name,
-      unit: selectedUnit,
+      unit: unitObj ? unitObj.name : selectedUnit,
     });
 
     setName("");

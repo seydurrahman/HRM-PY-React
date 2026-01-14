@@ -47,9 +47,12 @@ export default function DepartmentEntry() {
     if (!selectedDivision) return alert("Select division");
     if (!name.trim()) return alert("Enter department name");
 
+    const divObj = divisions.find(
+      (d) => String(d.id) === String(selectedDivision)
+    );
     await api.post("/settings/departments/", {
       name,
-      division: selectedDivision,
+      division: divObj ? divObj.name : selectedDivision,
     });
     setName("");
     loadDepartments(selectedDivision);

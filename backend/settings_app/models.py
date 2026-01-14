@@ -1,23 +1,41 @@
 from django.db import models
 
+
 class EmployeeType(models.TextChoices):
     PERMANENT = "PER", "Permanent"
     CONTRACT = "CON", "Contract"
     INTERN = "INT", "Intern"
     PART_TIME = "PT", "Part Time"
 
+
 class EmploymentType(models.TextChoices):
     FULL_TIME = "FT", "Full Time"
     PART_TIME = "PT", "Part Time"
     CASUAL = "CS", "Casual"
 
-class Unit(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+
+class Company(models.Model):
+    name = models.CharField(max_length=150, unique=True)
     description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
-    
+
+
+class Unit(models.Model):
+    name = models.CharField(max_length=100)
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, null=True, blank=True
+    )
+    description = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ("company", "name")
+
+    def __str__(self):
+        return self.name
+
+
 class Division(models.Model):
     name = models.CharField(max_length=100, unique=True)
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
@@ -25,6 +43,8 @@ class Division(models.Model):
 
     def __str__(self):
         return self.name
+
+
 class Department(models.Model):
     name = models.CharField(max_length=100, unique=True)
     division = models.ForeignKey(Division, on_delete=models.CASCADE)
@@ -32,6 +52,8 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+
 class Section(models.Model):
     name = models.CharField(max_length=100, unique=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
@@ -39,6 +61,8 @@ class Section(models.Model):
 
     def __str__(self):
         return self.name
+
+
 class SubSection(models.Model):
     name = models.CharField(max_length=100, unique=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
@@ -46,12 +70,19 @@ class SubSection(models.Model):
 
     def __str__(self):
         return self.name
+
+
 class Floor(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    section = models.ForeignKey(
+        Section, on_delete=models.CASCADE, null=True, blank=True
+    )
     description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
+
+
 class Line(models.Model):
     name = models.CharField(max_length=100, unique=True)
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE)
@@ -59,6 +90,19 @@ class Line(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Table(models.Model):
+    name = models.CharField(max_length=150)
+    floor = models.ForeignKey(Floor, on_delete=models.CASCADE, null=True, blank=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ("floor", "name")
+
+    def __str__(self):
+        return self.name
+
 
 class Grade(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -68,6 +112,7 @@ class Grade(models.Model):
     def __str__(self):
         return self.name
 
+
 class Designation(models.Model):
     name = models.CharField(max_length=100, unique=True)
     grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, blank=True)
@@ -75,11 +120,13 @@ class Designation(models.Model):
     def __str__(self):
         return self.name
 
+
 class Group(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
+
 
 class Bank(models.Model):
     name = models.CharField(max_length=150)
@@ -88,6 +135,7 @@ class Bank(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class SalarySetting(models.Model):
     grade = models.OneToOneField(Grade, on_delete=models.CASCADE)
@@ -100,10 +148,12 @@ class SalarySetting(models.Model):
     def __str__(self):
         return f"{self.grade.name} salary structure"
 
+
 class PFSetting(models.Model):
     is_active = models.BooleanField(default=True)
-    employee_percent = models.DecimalField(max_digits=5, decimal_places=2)   # e.g. 8.00
+    employee_percent = models.DecimalField(max_digits=5, decimal_places=2)  # e.g. 8.00
     employer_percent = models.DecimalField(max_digits=5, decimal_places=2)
+
 
 class OTSetting(models.Model):
     is_active = models.BooleanField(default=True)

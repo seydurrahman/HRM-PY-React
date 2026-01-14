@@ -9,6 +9,8 @@ const Sidebar = () => {
 
   useEffect(() => {
     const r = getUserRole();
+    console.log("User Role from getUserRole():", r); // Add this
+    console.log("Type of role:", typeof r); // And this
     setRole(r);
   }, []);
 
@@ -17,20 +19,20 @@ const Sidebar = () => {
   const menu = [
     {
       label: "Dashboard",
-      roles: ["Admin", "HR", "Employee"],
+      roles: ["Admin", "HR", "Employee","admin","hr","employee"],
       children: [
         { label: "Main Dashboard", path: "/dashboard" },
         {
           label: "HR Analytics",
           path: "/dashboard/hr",
-          roles: ["Admin", "HR"],
+          roles: ["Admin", "HR","admin","hr"],
         },
       ],
     },
 
     {
       label: "Employee Management",
-      roles: ["Admin", "HR"],
+      roles: ["Admin", "HR","admin","hr"],
       children: [
         { label: "Add Employee", path: "/employees" },
         { label: "Attendance", path: "/attendance" },
@@ -42,7 +44,7 @@ const Sidebar = () => {
     },
     {
       label: "Leave Management",
-      roles: ["Admin", "HR", "Employee"],
+      roles: ["Admin", "HR", "Employee","admin","hr","employee"],
       children: [
         { label: "Apply Leave", path: "/leave/apply" },
         { label: "Leave Balances", path: "/leave/balance" },
@@ -50,18 +52,18 @@ const Sidebar = () => {
         {
           label: "Leave Approval",
           path: "/leave/approval",
-          roles: ["Admin", "HR"],
+          roles: ["Admin", "HR","admin","hr"],
         },
         {
           label: "Leave Encashment",
           path: "/leave/encash",
-          roles: ["Admin", "HR"],
+          roles: ["Admin", "HR","admin","hr"],
         },
       ],
     },
     {
       label: "Salary & Payroll",
-      roles: ["Admin", "HR"],
+      roles: ["Admin", "HR","admin","hr"],
       children: [
         {
           label: "Earnings & Deductions",
@@ -72,13 +74,13 @@ const Sidebar = () => {
         {
           label: "Payslip",
           path: "/payroll/payslip",
-          roles: ["Admin", "HR", "Employee"],
+          roles: ["Admin", "HR", "Employee","admin","hr","employee"],
         },
       ],
     },
     {
       label: "PF Management",
-      roles: ["Admin", "HR"],
+      roles: ["Admin", "HR","admin","hr"],
       children: [
         { label: "PF Dashboard", path: "/pf/dashboard" },
         { label: "PF Settings", path: "/pf/settings" },
@@ -89,14 +91,14 @@ const Sidebar = () => {
     },
     {
       label: "Admin",
-      roles: ["Admin", "HR"],
+      roles: ["Admin", "HR","admin","hr"],
       children: [
         { label: "Loan Dashboard", path: "/loan/dashboard" },
         { label: "Loan Types", path: "/loan/types" },
         {
           label: "Loan Request",
           path: "/loan/request",
-          roles: ["Admin", "HR", "Employee"],
+          roles: ["Admin", "HR", "Employee","admin","hr","employee"],
         },
         { label: "Loan Approval", path: "/loan/approval" },
         { label: "Loan Disbursement", path: "/loan/disbursement" },
@@ -107,26 +109,26 @@ const Sidebar = () => {
 
     {
       label: "Recruitment",
-      roles: ["Admin", "HR", "Employee"],
+      roles: ["Admin", "HR", "Employee","admin","hr","employee"],
       children: [
         { label: "Aplly (Public)", path: "/recruit/apply" },
         {
           label: "Candidates",
           path: "/recruit/candidates",
-          roles: ["Admin", "HR"],
+          roles: ["Admin", "HR","admin","hr"],
         },
         {
           label: "Interviews",
           path: "/recruit/interviews",
-          roles: ["Admin", "HR"],
+          roles: ["Admin", "HR","employee"],
         },
-        { label: "Offers", path: "/recruit/offers", roles: ["Admin", "HR"] },
+        { label: "Offers", path: "/recruit/offers", roles: ["Admin", "HR","admin","hr"] },
       ],
     },
 
     {
       label: "Organization Entry",
-      roles: ["Admin", "HR"],
+      roles: ["Admin", "HR","admin","hr"],
       children: [
         { label: "Company", path: "/settings/company" },
         { label: "Unit", path: "/settings/unit" },

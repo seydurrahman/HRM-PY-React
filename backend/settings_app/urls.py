@@ -7,6 +7,8 @@ from .views import (
     SalarySettingViewSet,
     PFSettingViewSet,
     OTSettingViewSet,
+    CompanyViewSet,
+    TableViewSet,
     UnitViewSet,
     DivisionViewSet,
     DepartmentViewSet,
@@ -24,6 +26,7 @@ router.register(r"banks", BankViewSet)
 router.register(r"salary-settings", SalarySettingViewSet)
 router.register(r"pf-settings", PFSettingViewSet)
 router.register(r"ot-settings", OTSettingViewSet)
+router.register(r"companies", CompanyViewSet)
 router.register("units", UnitViewSet)
 router.register("divisions", DivisionViewSet, basename="division")
 router.register("departments", DepartmentViewSet, basename="department")
@@ -31,5 +34,6 @@ router.register("sections", SectionViewSet, basename="section")
 router.register("subsections", SubSectionViewSet, basename="subsection")
 router.register("floors", FloorViewSet)
 router.register("lines", LineViewSet, basename="line")
+router.register("tables", TableViewSet, basename="table")
 
 urlpatterns = router.urls

@@ -101,7 +101,6 @@ urlpatterns = [
     path("api/login/", MyTokenObtainPairView.as_view(), name="jwt_login"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/", include("employees.urls")),  # Employee related APIs
-    path("api/settings/", include("organization.urls")),  # Organization related APIs
     path("api/countries/", CountryList.as_view(), name="country-list"),
     path("api/geo/", include("geo.urls")),  # Geo related APIs
 ]

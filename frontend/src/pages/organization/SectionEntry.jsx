@@ -56,9 +56,12 @@ export default function SectionEntry() {
     if (!selectedDepartment) return alert("Select department");
     if (!name.trim()) return alert("Enter section name");
 
+    const depObj = departments.find(
+      (d) => String(d.id) === String(selectedDepartment)
+    );
     await api.post("/settings/sections/", {
       name,
-      department: selectedDepartment,
+      department: depObj ? depObj.name : selectedDepartment,
     });
     setName("");
     loadSections(selectedDepartment);
