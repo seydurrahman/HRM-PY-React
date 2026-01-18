@@ -70,6 +70,30 @@ const EmployeeCreate = () => {
   const [lines, setLines] = useState([]);
 
   // Division to union
+  const BASE = "https://bdapis.vercel.app/geo/v2.0";
+
+  const loadBD = async (url, setter) => {
+    try {
+      const res = await api.get(url);
+      // Check the actual response structure
+      console.log("BD API Response:", res.data);
+
+      // Try different possible structures
+      let data = [];
+      if (Array.isArray(res.data.data)) {
+        data = res.data.data;
+      } else if (Array.isArray(res.data)) {
+        data = res.data;
+      } else if (res.data.results) {
+        data = res.data.results;
+      }
+
+      setter(data);
+    } catch (err) {
+      console.error("BD load error:", err);
+    }
+  };
+
   const [bdDivisions, setBdDivisions] = useState([]);
   const [bdDistricts, setBdDistricts] = useState([]);
   const [bdUpazilas, setBdUpazilas] = useState([]);
@@ -333,80 +357,128 @@ const EmployeeCreate = () => {
     api
       .get("/countries/")
       .then((res) => {
-        console.log("Countries API Response:", res.data);
-        setCountries(res.data);
+        console.log("First country:", res.data[0]);
+        // Add IDs if they don't exist
+        const countriesWithIds = res.data.map((country, index) => ({
+          ...country,
+          id: index + 1, // Add numeric ID
+          code: country.code || country.name, // Add code if missing
+        }));
+        setCountries(countriesWithIds);
       })
       .catch((err) => console.error("Country error:", err));
   }, []);
 
-  // Division to union
+  // Load divisions
   useEffect(() => {
-    fetch("https://bdapi.vercel.app/api/v.1/division")
-      .then((res) => res.json())
-      .then((data) => setBdDivisions(data.data))
-      .catch((err) => console.error("Division Load Error:", err));
+    loadBD("/bd/divisions/", setBdDivisions);
   }, []);
 
+  // Load districts
   useEffect(() => {
-    if (!form.nominee_division) {
+    if (!form.nominee_address_division) {
       setBdDistricts([]);
+      setBdUpazilas([]);
+      setBdUnions([]);
       return;
     }
+    loadBD(`/bd/districts/${form.nominee_address_division}/`, setBdDistricts);
+  }, [form.nominee_address_division]);
 
-    fetch(
-      `https://bdapi.vercel.app/api/v.1/district?division_id=${form.nominee_division}`
-    )
-      .then((res) => res.json())
-      .then((data) => setBdDistricts(data.data))
-      .catch((err) => console.error("District Load Error:", err));
-
-    // RESET CHILD FIELDS
-    setForm((prev) => ({
-      ...prev,
-      nominee_district: "",
-      nominee_upazila: "",
-      nominee_union: "",
-    }));
-  }, [form.nominee_division]);
-
+  // Load upazilas
   useEffect(() => {
     if (!form.nominee_district) {
       setBdUpazilas([]);
+      setBdUnions([]);
       return;
     }
-
-    fetch(
-      `https://bdapi.vercel.app/api/v.1/upazila?district_id=${form.nominee_district}`
-    )
-      .then((res) => res.json())
-      .then((data) => setBdUpazilas(data.data))
-      .catch((err) => console.error("Upazila Load Error:", err));
-
-    setForm((prev) => ({
-      ...prev,
-      nominee_upazila: "",
-      nominee_union: "",
-    }));
+    loadBD(`/bd/upazilas/${form.nominee_district}/`, setBdUpazilas);
   }, [form.nominee_district]);
 
+  // Load unions
   useEffect(() => {
     if (!form.nominee_upazila) {
       setBdUnions([]);
       return;
     }
-
-    fetch(
-      `https://bdapi.vercel.app/api/v.1/union?upazila_id=${form.nominee_upazila}`
-    )
-      .then((res) => res.json())
-      .then((data) => setBdUnions(data.data))
-      .catch((err) => console.error("Union Load Error:", err));
-
-    setForm((prev) => ({
-      ...prev,
-      nominee_union: "",
-    }));
+    loadBD(`/bd/unions/${form.nominee_upazila}/`, setBdUnions);
   }, [form.nominee_upazila]);
+
+  // get Id
+  const getNameById = (list, id) => {
+    if (!id || !Array.isArray(list) || list.length === 0) return "";
+    const obj = list.find((x) => String(x.id) === String(id));
+    return obj ? obj.name : "";
+  };
+
+  // Division to union
+  // useEffect(() => {
+  //   fetch("https://bdapi.vercel.app/api/v.1/division")
+  //     .then((res) => res.json())
+  //     .then((data) => setBdDivisions(data.data))
+  //     .catch((err) => console.error("Division Load Error:", err));
+  // }, []);
+
+  // useEffect(() => {
+  //   if (!form.nominee_division) {
+  //     setBdDistricts([]);
+  //     return;
+  //   }
+
+  //   fetch(
+  //     `https://bdapi.vercel.app/api/v.1/district?division_id=${form.nominee_division}`
+  //   )
+  //     .then((res) => res.json())
+  //     .then((data) => setBdDistricts(data.data))
+  //     .catch((err) => console.error("District Load Error:", err));
+
+  //   // RESET CHILD FIELDS
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     nominee_district: "",
+  //     nominee_upazila: "",
+  //     nominee_union: "",
+  //   }));
+  // }, [form.nominee_division]);
+
+  // useEffect(() => {
+  //   if (!form.nominee_district) {
+  //     setBdUpazilas([]);
+  //     return;
+  //   }
+
+  //   fetch(
+  //     "https://bdapi.vercel.app/api/v.1/district/1"
+  //   )
+  //     .then((res) => res.json())
+  //     .then((data) => setBdUpazilas(data.data))
+  //     .catch((err) => console.error("Upazila Load Error:", err));
+
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     nominee_upazila: "",
+  //     nominee_union: "",
+  //   }));
+  // }, [form.nominee_district]);
+
+  // useEffect(() => {
+  //   if (!form.nominee_upazila) {
+  //     setBdUnions([]);
+  //     return;
+  //   }
+
+  //   fetch(
+  //     `https://bdapi.vercel.app/api/v.1/union?upazila_id=${form.nominee_upazila}`
+  //   )
+  //     .then((res) => res.json())
+  //     .then((data) => setBdUnions(data.data))
+  //     .catch((err) => console.error("Union Load Error:", err));
+
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     nominee_union: "",
+  //   }));
+  // }, [form.nominee_upazila]);
 
   // emploee Id get
   useEffect(() => {
@@ -495,7 +567,7 @@ const EmployeeCreate = () => {
                   job_end_date: "",
                   leave_reason: "",
                 },
-              ]
+              ],
         );
 
         setEducations(
@@ -510,7 +582,7 @@ const EmployeeCreate = () => {
                   education_board: "",
                   result: "",
                 },
-              ]
+              ],
         );
 
         setTraining(
@@ -525,7 +597,7 @@ const EmployeeCreate = () => {
                   training_result: "",
                   remarks: "",
                 },
-              ]
+              ],
         );
 
         // other docs (existing)
@@ -536,7 +608,7 @@ const EmployeeCreate = () => {
               file: null,
               id: d.id,
               url: d.file,
-            }))
+            })),
           );
         }
       })
@@ -768,7 +840,7 @@ const EmployeeCreate = () => {
     setIsCheckingCode(true);
     try {
       const res = await api.get(
-        `/employees-check-code/?code=${encodeURIComponent(form.code)}`
+        `/employees-check-code/?code=${encodeURIComponent(form.code)}`,
       );
       if (res.data.exists) {
         setCodeError("Employee Code already exists!");
@@ -933,7 +1005,7 @@ const EmployeeCreate = () => {
         if (val.length === 0) return undefined;
         if (
           val.every(
-            (v) => v === null || v === undefined || typeof v !== "object"
+            (v) => v === null || v === undefined || typeof v !== "object",
           )
         )
           return String(val[0]);
@@ -960,6 +1032,20 @@ const EmployeeCreate = () => {
         "designation",
         "grade",
         "reporting_to",
+
+        // new adding for division to union
+        "nominee_address_division",
+        "nominee_district",
+        "nominee_upazila",
+        "nominee_union",
+        "address_division",
+        "district",
+        "upazila",
+        "union",
+
+        // Country
+        "country",
+        "nominee_country",
       ];
 
       if (fkFields.includes(key)) {
@@ -995,6 +1081,61 @@ const EmployeeCreate = () => {
             return findName(designations);
           case "grade":
             return findName(grades);
+
+          // For BD Geo fields, send names not IDs
+          case "nominee_address_division":
+          case "address_division":
+            if (val) {
+              const foundDiv = bdDivisions.find(
+                (d) => String(d.id) === String(val),
+              );
+              return foundDiv ? foundDiv.name : val;
+            }
+            return "";
+
+          case "nominee_district":
+          case "district":
+            if (val) {
+              const foundDist = bdDistricts.find(
+                (d) => String(d.id) === String(val),
+              );
+              return foundDist ? foundDist.name : val;
+            }
+            return "";
+
+          case "nominee_upazila":
+          case "upazila":
+            if (val) {
+              const foundUp = bdUpazilas.find(
+                (u) => String(u.id) === String(val),
+              );
+              return foundUp ? foundUp.name : val;
+            }
+            return "";
+
+          case "nominee_union":
+          case "union":
+            if (val) {
+              const foundUnion = bdUnions.find(
+                (u) => String(u.id) === String(val),
+              );
+              return foundUnion ? foundUnion.name : val;
+            }
+            return "";
+
+          // Country
+          case "country":
+          case "nominee_country":
+            // If val is an ID (number), find the country name
+            if (val && !isNaN(parseInt(val))) {
+              const foundCountry = countries.find(
+                (c) => c.id === parseInt(val),
+              );
+              return foundCountry ? foundCountry.name : "";
+            }
+            // If val is already a name, return it
+            return val || "";
+
           // Keep reporting_to as id/name as-is (it's a user reference)
           default:
             return s;
@@ -1111,8 +1252,8 @@ const EmployeeCreate = () => {
     console.log("JobExperiences before submit:", jobExperiences);
     const nonEmptyJobExperiences = (jobExperiences || []).filter((j) =>
       Object.values(j).some(
-        (v) => v !== null && v !== undefined && String(v).trim() !== ""
-      )
+        (v) => v !== null && v !== undefined && String(v).trim() !== "",
+      ),
     );
     if (nonEmptyJobExperiences.length > 0) {
       fd.append("job_experiences", JSON.stringify(nonEmptyJobExperiences));
@@ -1120,8 +1261,8 @@ const EmployeeCreate = () => {
 
     const nonEmptyEducations = (educations || []).filter((e) =>
       Object.values(e).some(
-        (v) => v !== null && v !== undefined && String(v).trim() !== ""
-      )
+        (v) => v !== null && v !== undefined && String(v).trim() !== "",
+      ),
     );
     if (nonEmptyEducations.length > 0) {
       fd.append("educations", JSON.stringify(nonEmptyEducations));
@@ -1129,8 +1270,8 @@ const EmployeeCreate = () => {
 
     const nonEmptyTrainings = (training || []).filter((t) =>
       Object.values(t).some(
-        (v) => v !== null && v !== undefined && String(v).trim() !== ""
-      )
+        (v) => v !== null && v !== undefined && String(v).trim() !== "",
+      ),
     );
     if (nonEmptyTrainings.length > 0) {
       fd.append("trainings", JSON.stringify(nonEmptyTrainings));
@@ -1140,7 +1281,7 @@ const EmployeeCreate = () => {
     if (otherDocs && otherDocs.length > 0) {
       fd.append(
         "other_docs",
-        JSON.stringify(otherDocs.map((d) => ({ title: d.title })))
+        JSON.stringify(otherDocs.map((d) => ({ title: d.title }))),
       );
       otherDocs.forEach((d) => {
         if (d.file) fd.append("other_doc_files", d.file, d.file.name);
@@ -1171,7 +1312,7 @@ const EmployeeCreate = () => {
       alert(
         isEdit
           ? "Employee updated successfully!"
-          : "Employee created successfully!"
+          : "Employee created successfully!",
       );
       navigate("/employees");
     } catch (err) {
@@ -1617,8 +1758,8 @@ const EmployeeCreate = () => {
                   value={form.religion === "" ? "Islam" : form.religion}
                   onChange={handleChange}
                 >
-                  <option value="Islam">Islam</option>
                   <option value="">Select Religion</option>
+                  <option value="Islam">Islam</option>
                   <option value="Hindu">Hindu</option>
                   <option value="Christian">Christian</option>
                   <option value="Buddhist">Buddhist</option>
@@ -1892,6 +2033,7 @@ const EmployeeCreate = () => {
                   ))}
                 </select>
               </div>
+
               {/* Nominee Division */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -1904,13 +2046,16 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Division</option>
-                  {bdDivisions.map((div) => (
-                    <option key={div.id} value={div.name}>
-                      {div.name}
+                  {bdDivisions.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {" "}
+                      {/* Store ID */}
+                      {d.name}
                     </option>
                   ))}
                 </select>
               </div>
+
               {/* Nominee District */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -1923,13 +2068,14 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select District</option>
-                  {bdDistricts.map((dist) => (
-                    <option key={dist.id} value={dist.id}>
-                      {dist.name}
+                  {bdDistricts.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
                     </option>
                   ))}
                 </select>
               </div>
+
               {/* Nominee Upazila */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -1942,13 +2088,14 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Upazila</option>
-                  {bdUpazilas.map((upa) => (
-                    <option key={upa.id} value={upa.id}>
-                      {upa.name}
+                  {bdUpazilas.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name}
                     </option>
                   ))}
                 </select>
               </div>
+
               {/* Nominee Union */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -1968,6 +2115,7 @@ const EmployeeCreate = () => {
                   ))}
                 </select>
               </div>
+
               {/* Nominee Post Code */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -2059,13 +2207,13 @@ const EmployeeCreate = () => {
                 >
                   <option value="">Select Nationality</option>
                   {countries.map((c, index) => (
-                    <option key={index} value={c.name}>
+                    <option key={index} value={c.code || c.name}>
                       {c.name}
                     </option>
                   ))}
                 </select>
               </div>
-              {/* Division */}
+              {/* Division - Store ID, not name */}
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Division
@@ -2078,13 +2226,16 @@ const EmployeeCreate = () => {
                 >
                   <option value="">Select Division</option>
                   {bdDivisions.map((d) => (
-                    <option key={d.id} value={d.name}>
+                    <option key={d.id} value={d.id}>
+                      {" "}
+                      {/* Store ID */}
                       {d.name}
                     </option>
                   ))}
                 </select>
               </div>
-              {/* District */}
+
+              {/* District - Already storing ID */}
               <div>
                 <label className="block text-sm font-medium mb-1">
                   District
@@ -2098,11 +2249,14 @@ const EmployeeCreate = () => {
                   <option value="">Select District</option>
                   {bdDistricts.map((dist) => (
                     <option key={dist.id} value={dist.id}>
+                      {" "}
+                      {/* ID is correct */}
                       {dist.name}
                     </option>
                   ))}
                 </select>
               </div>
+
               {/* Upazila */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -2117,11 +2271,14 @@ const EmployeeCreate = () => {
                   <option value="">Select Upazila</option>
                   {bdUpazilas.map((upa) => (
                     <option key={upa.id} value={upa.id}>
+                      {" "}
+                      {/* ID is correct */}
                       {upa.name}
                     </option>
                   ))}
                 </select>
               </div>
+
               {/* Union */}
               <div>
                 <label className="block text-sm font-medium mb-1">Union</label>
@@ -2134,6 +2291,8 @@ const EmployeeCreate = () => {
                   <option value="">Select Union</option>
                   {bdUnions.map((uni) => (
                     <option key={uni.id} value={uni.id}>
+                      {" "}
+                      {/* ID is correct */}
                       {uni.name}
                     </option>
                   ))}

@@ -1,12 +1,12 @@
-# geo/views.py
 import requests
 from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-BASE = "https://bdapi.vercel.app/api/v.1"
-CACHE_TTL = 60 * 60 * 24  # Cache for 1 day
+BASE = "https://bdapis.vercel.app/geo/v2.0"
+CACHE_TTL = 60 * 60 * 24  # 1 day
+
 
 class DivisionsView(APIView):
     permission_classes = [AllowAny]
@@ -17,7 +17,7 @@ class DivisionsView(APIView):
         if data:
             return Response(data)
 
-        r = requests.get(f"{BASE}/division")
+        r = requests.get(f"{BASE}/divisions")
         data = r.json()
         cache.set(key, data, CACHE_TTL)
         return Response(data)
@@ -32,7 +32,7 @@ class DistrictsByDivisionView(APIView):
         if data:
             return Response(data)
 
-        r = requests.get(f"{BASE}/district/{division_id}")
+        r = requests.get(f"{BASE}/districts/{division_id}")
         data = r.json()
         cache.set(key, data, CACHE_TTL)
         return Response(data)
@@ -47,7 +47,7 @@ class UpazilasByDistrictView(APIView):
         if data:
             return Response(data)
 
-        r = requests.get(f"{BASE}/district/{district_id}")  # API uses same endpoint
+        r = requests.get(f"{BASE}/upazilas/{district_id}")
         data = r.json()
         cache.set(key, data, CACHE_TTL)
         return Response(data)
@@ -62,8 +62,7 @@ class UnionsByUpazilaView(APIView):
         if data:
             return Response(data)
 
-        # Union endpoint sometimes unclear; using same as district for now
-        r = requests.get(f"{BASE}/district/{upazila_id}")
+        r = requests.get(f"{BASE}/unions/{upazila_id}")
         data = r.json()
         cache.set(key, data, CACHE_TTL)
         return Response(data)

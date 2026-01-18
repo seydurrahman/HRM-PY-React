@@ -20,7 +20,7 @@ class EmployeeOtherDocumentSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "file", "uploaded_at"]
 
 
-class EmployeeSerializer(CountryFieldMixin, serializers.ModelSerializer):
+class EmployeeSerializer(serializers.ModelSerializer):
     designation_name = serializers.CharField(
         source="designation.name",
         read_only=True,
@@ -41,7 +41,11 @@ class EmployeeSerializer(CountryFieldMixin, serializers.ModelSerializer):
     leave_effective = serializers.DateField(
         source="Leave_effective", required=False, allow_null=True
     )
-
+     # Add these as regular CharFields
+    nominee_country = serializers.CharField(required=False, allow_blank=True)
+    country = serializers.CharField(required=False, allow_blank=True)
+    address_division = serializers.CharField(required=False, allow_blank=True)
+    
     other_documents = EmployeeOtherDocumentSerializer(many=True, read_only=True)
 
     # JSON fields

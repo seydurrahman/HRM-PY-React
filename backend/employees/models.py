@@ -69,19 +69,27 @@ class Employee(models.Model):
     nominee_relation = models.CharField(max_length=50, blank=True)
     nominee_mobile = models.CharField(max_length=30, blank=True)
     nominee_nid = models.CharField(max_length=100, blank=True)
+
+
     nominee_country = models.CharField(max_length=50, blank=True)
     nominee_address_division = models.CharField(
         max_length=50, blank=True
-    )  # Address division
+    )
     nominee_district = models.CharField(max_length=50, blank=True)
     nominee_upazila = models.CharField(max_length=50, blank=True)
     nominee_union = models.CharField(max_length=50, blank=True)
     nominee_post_code = models.CharField(max_length=20, blank=True)
+
+
+
     nominee_village = models.CharField(max_length=100, blank=True)
     nominee_village_bangla = models.CharField(max_length=100, blank=True)
     emg_contact_name = models.CharField(max_length=100, blank=True)
     emg_contact_phone = models.CharField(max_length=30, blank=True)
     emg_contact_relation = models.CharField(max_length=50, blank=True)
+
+    
+
     country = models.CharField(max_length=50, blank=True)
     address_division = models.CharField(
         max_length=50, blank=True
@@ -90,8 +98,9 @@ class Employee(models.Model):
     upazila = models.CharField(max_length=50, blank=True)
     union = models.CharField(max_length=50, blank=True)
     post_code = models.CharField(max_length=20, blank=True)
-    address = models.TextField(blank=True)
     village = models.TextField(blank=True)
+
+    address = models.TextField(blank=True)
     village_bangla = models.TextField(blank=True)
     local_auth_name = models.CharField(max_length=100, blank=True)
     local_auth_mobile = models.CharField(max_length=30, blank=True)
