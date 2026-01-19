@@ -95,11 +95,16 @@ const EmployeeCreate = () => {
       console.error("BD load error:", err);
     }
   };
-
+  // Division to union for nominee
   const [bdDivisions, setBdDivisions] = useState([]);
   const [bdDistricts, setBdDistricts] = useState([]);
   const [bdUpazilas, setBdUpazilas] = useState([]);
   const [bdUnions, setBdUnions] = useState([]);
+  // Division to union for employee
+  const [bdEmpDivisions, setBdEmpDivisions] = useState([]);
+  const [bdEmpDistricts, setBdEmpDistricts] = useState([]);
+  const [bdEmpUpazilas, setBdEmpUpazilas] = useState([]);
+  const [bdEmpUnions, setBdEmpUnions] = useState([]);
 
   const [codeError, setCodeError] = useState("");
   const [isCheckingCode, setIsCheckingCode] = useState(false);
@@ -371,12 +376,17 @@ const EmployeeCreate = () => {
       .catch((err) => console.error("Country error:", err));
   }, []);
 
-  // Load divisions
+  // Load divisions for nominee
   useEffect(() => {
     loadBD("/bd/divisions/", setBdDivisions);
   }, []);
 
-  // Load districts
+  // Load divisions for employee
+  useEffect(() => {
+    loadBD("/bd/divisions/", setBdEmpDivisions);
+  }, []);
+
+  // Load districts for nominee
   useEffect(() => {
     if (!form.nominee_address_division) {
       setBdDistricts([]);
@@ -387,7 +397,18 @@ const EmployeeCreate = () => {
     loadBD(`/bd/districts/${form.nominee_address_division}/`, setBdDistricts);
   }, [form.nominee_address_division]);
 
-  // Load upazilas
+   // Load districts for employee
+  useEffect(() => {
+    if (!form.address_division) {
+      setBdEmpDistricts([]);
+      setBdEmpUpazilas([]);
+      setBdEmpUnions([]);
+      return;
+    }
+    loadBD(`/bd/districts/${form.address_division}/`, setBdEmpDistricts);
+  }, [form.address_division]);
+
+  // Load upazilas for nominee
   useEffect(() => {
     if (!form.nominee_district) {
       setBdUpazilas([]);
@@ -397,7 +418,17 @@ const EmployeeCreate = () => {
     loadBD(`/bd/upazilas/${form.nominee_district}/`, setBdUpazilas);
   }, [form.nominee_district]);
 
-  // Load unions
+  // Load upazilas for employee
+  useEffect(() => {
+    if (!form.district) {
+      setBdEmpUpazilas([]);
+      setBdEmpUnions([]);
+      return;
+    }
+    loadBD(`/bd/upazilas/${form.district}/`, setBdEmpUpazilas);
+  }, [form.district]);
+
+  // Load unions for nominee
   useEffect(() => {
     if (!form.nominee_upazila) {
       setBdUnions([]);
@@ -405,6 +436,15 @@ const EmployeeCreate = () => {
     }
     loadBD(`/bd/unions/${form.nominee_upazila}/`, setBdUnions);
   }, [form.nominee_upazila]);
+
+   // Load unions for employee
+  useEffect(() => {
+    if (!form.upazila) {
+      setBdEmpUnions([]);
+      return;
+    }
+    loadBD(`/bd/unions/${form.upazila}/`, setBdEmpUnions);
+  }, [form.upazila]);
 
   // get Id
   const getNameById = (list, id) => {
@@ -617,7 +657,7 @@ const EmployeeCreate = () => {
       .catch((err) => console.error("Employee load error:", err));
   }, [params?.id]);
 
-  
+
   // Add/Remove Job Experience Entries
   const addJobExperience = () => {
     setJobExperiences([
@@ -1086,7 +1126,8 @@ const EmployeeCreate = () => {
           case "grade":
             return findName(grades);
 
-          // For BD Geo fields, send names not IDs
+          // For BD Geo fields for nominee, send names not IDs
+          // For nominee
           case "nominee_address_division":
           case "address_division":
             if (val) {
@@ -1096,7 +1137,16 @@ const EmployeeCreate = () => {
               return foundDiv ? foundDiv.name : val;
             }
             return "";
-
+          // For employee
+          case "address_division":
+            if (val) {
+              const foundDiv = bdEmpDivisions.find(
+                (d) => String(d.id) === String(val),
+              );
+              return foundDiv ? foundDiv.name : val;
+            }
+            return "";
+            // for nominee
           case "nominee_district":
           case "district":
             if (val) {
@@ -1107,6 +1157,16 @@ const EmployeeCreate = () => {
             }
             return "";
 
+              // for employee
+          case "district":
+            if (val) {
+              const foundDist = bdEmpDistricts.find(
+                (d) => String(d.id) === String(val),
+              );
+              return foundDist ? foundDist.name : val;
+            }
+            return "";
+            // for nominee
           case "nominee_upazila":
           case "upazila":
             if (val) {
@@ -1117,10 +1177,30 @@ const EmployeeCreate = () => {
             }
             return "";
 
+            // for employee
+          case "upazila":
+            if (val) {
+              const foundUp = bdEmpUpazilas.find(
+                (u) => String(u.id) === String(val),
+              );
+              return foundUp ? foundUp.name : val;
+            }
+            return "";
+            // for nominee
           case "nominee_union":
           case "union":
             if (val) {
               const foundUnion = bdUnions.find(
+                (u) => String(u.id) === String(val),
+              );
+              return foundUnion ? foundUnion.name : val;
+            }
+            return "";
+
+              // for employee
+          case "union":
+            if (val) {
+              const foundUnion = bdEmpUnions.find(
                 (u) => String(u.id) === String(val),
               );
               return foundUnion ? foundUnion.name : val;
@@ -2229,7 +2309,7 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Division</option>
-                  {bdDivisions.map((d) => (
+                  {bdEmpDivisions.map((d) => (
                     <option key={d.id} value={d.id}>
                       {" "}
                       {/* Store ID */}
@@ -2251,7 +2331,7 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select District</option>
-                  {bdDistricts.map((dist) => (
+                  {bdEmpDistricts.map((dist) => (
                     <option key={dist.id} value={dist.id}>
                       {" "}
                       {/* ID is correct */}
@@ -2273,7 +2353,7 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Upazila</option>
-                  {bdUpazilas.map((upa) => (
+                  {bdEmpUpazilas.map((upa) => (
                     <option key={upa.id} value={upa.id}>
                       {" "}
                       {/* ID is correct */}
@@ -2293,7 +2373,7 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="">Select Union</option>
-                  {bdUnions.map((uni) => (
+                  {bdEmpUnions.map((uni) => (
                     <option key={uni.id} value={uni.id}>
                       {" "}
                       {/* ID is correct */}
