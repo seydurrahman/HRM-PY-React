@@ -95,6 +95,16 @@ const EmployeeCreate = () => {
       console.error("BD load error:", err);
     }
   };
+
+  // Get name insted of ID for showing data when edit
+  const getIdByName = (list, name) => {
+  if (!name || !Array.isArray(list)) return "";
+  const found = list.find(
+    (x) => x.name.trim().toLowerCase() === String(name).trim().toLowerCase()
+  );
+  return found ? found.id : "";
+};
+
   // Division to union for nominee
   const [bdDivisions, setBdDivisions] = useState([]);
   const [bdDistricts, setBdDistricts] = useState([]);
@@ -531,6 +541,87 @@ const EmployeeCreate = () => {
   }, []);
 
   // If editing, load existing employee data
+  // another use effect
+  // Nominee Division
+useEffect(() => {
+  if (!isEdit || !form.nominee_address_division || bdDivisions.length === 0) return;
+
+  const id = getIdByName(bdDivisions, form.nominee_address_division);
+  if (id) {
+    setForm(prev => ({ ...prev, nominee_address_division: id }));
+  }
+}, [bdDivisions]);
+
+// Nominee District
+useEffect(() => {
+  if (!isEdit || !form.nominee_district || bdDistricts.length === 0) return;
+
+  const id = getIdByName(bdDistricts, form.nominee_district);
+  if (id) {
+    setForm(prev => ({ ...prev, nominee_district: id }));
+  }
+}, [bdDistricts]);
+
+// Nominee Upazila
+useEffect(() => {
+  if (!isEdit || !form.nominee_upazila || bdUpazilas.length === 0) return;
+
+  const id = getIdByName(bdUpazilas, form.nominee_upazila);
+  if (id) {
+    setForm(prev => ({ ...prev, nominee_upazila: id }));
+  }
+}, [bdUpazilas]);
+
+// Nominee Union
+useEffect(() => {
+  if (!isEdit || !form.nominee_union || bdUnions.length === 0) return;
+
+  const id = getIdByName(bdUnions, form.nominee_union);
+  if (id) {
+    setForm(prev => ({ ...prev, nominee_union: id }));
+  }
+}, [bdUnions]);
+
+// Employee Division
+useEffect(() => {
+  if (!isEdit || !form.address_division || bdEmpDivisions.length === 0) return;
+
+  const id = getIdByName(bdEmpDivisions, form.address_division);
+  if (id) {
+    setForm(prev => ({ ...prev, address_division: id }));
+  }
+}, [bdEmpDivisions]);
+
+// Employee District
+useEffect(() => {
+  if (!isEdit || !form.district || bdEmpDistricts.length === 0) return;
+
+  const id = getIdByName(bdEmpDistricts, form.district);
+  if (id) {
+    setForm(prev => ({ ...prev, district: id }));
+  }
+}, [bdEmpDistricts]);
+
+// Employee Upazila
+useEffect(() => {
+  if (!isEdit || !form.upazila || bdEmpUpazilas.length === 0) return;
+
+  const id = getIdByName(bdEmpUpazilas, form.upazila);
+  if (id) {
+    setForm(prev => ({ ...prev, upazila: id }));
+  }
+}, [bdEmpUpazilas]);
+
+// Employee Union
+useEffect(() => {
+  if (!isEdit || !form.union || bdEmpUnions.length === 0) return;
+
+  const id = getIdByName(bdEmpUnions, form.union);
+  if (id) {
+    setForm(prev => ({ ...prev, union: id }));
+  }
+}, [bdEmpUnions]);
+
   useEffect(() => {
     if (!params?.id) return;
     setIsEdit(true);
