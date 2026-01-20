@@ -68,7 +68,6 @@ const EmployeeCreate = () => {
   const [subsections, setSubsections] = useState([]);
   const [floors, setFloors] = useState([]);
   const [lines, setLines] = useState([]);
-  
 
   // Division to union
 
@@ -98,12 +97,12 @@ const EmployeeCreate = () => {
 
   // Get name insted of ID for showing data when edit
   const getIdByName = (list, name) => {
-  if (!name || !Array.isArray(list)) return "";
-  const found = list.find(
-    (x) => x.name.trim().toLowerCase() === String(name).trim().toLowerCase()
-  );
-  return found ? found.id : "";
-};
+    if (!name || !Array.isArray(list)) return "";
+    const found = list.find(
+      (x) => x.name.trim().toLowerCase() === String(name).trim().toLowerCase(),
+    );
+    return found ? found.id : "";
+  };
 
   // Division to union for nominee
   const [bdDivisions, setBdDivisions] = useState([]);
@@ -202,12 +201,12 @@ const EmployeeCreate = () => {
       disburse_type: null,
       mfs_number: null,
       shift: null,
-      OT_eligibility: false,
       weekends: null,
       office_email: null,
       office_mobile: null,
       work_location: "",
       software_user: false,
+      OT_eligibility: false,
       emp_panel_user: false,
       bgmea_ID: null,
       bkmea_ID: null,
@@ -289,6 +288,15 @@ const EmployeeCreate = () => {
       education_certificate_docs: null,
       training_certificate: "",
       training_certificate_docs: null,
+
+      // existing file URLs (for edit mode preview)
+      emp_image_docs_url: "",
+      emp_id_docs_url: "",
+      emp_birthcertificate_docs_url: "",
+      nominee_id_docs_url: "",
+      job_exp_certificate_docs_url: "",
+      education_certificate_docs_url: "",
+      training_certificate_docs_url: "",
 
       // system
       is_active: true,
@@ -407,7 +415,7 @@ const EmployeeCreate = () => {
     loadBD(`/bd/districts/${form.nominee_address_division}/`, setBdDistricts);
   }, [form.nominee_address_division]);
 
-   // Load districts for employee
+  // Load districts for employee
   useEffect(() => {
     if (!form.address_division) {
       setBdEmpDistricts([]);
@@ -447,7 +455,7 @@ const EmployeeCreate = () => {
     loadBD(`/bd/unions/${form.nominee_upazila}/`, setBdUnions);
   }, [form.nominee_upazila]);
 
-   // Load unions for employee
+  // Load unions for employee
   useEffect(() => {
     if (!form.upazila) {
       setBdEmpUnions([]);
@@ -543,210 +551,222 @@ const EmployeeCreate = () => {
   // If editing, load existing employee data
   // another use effect
   // Nominee Division
-useEffect(() => {
-  if (!isEdit || !form.nominee_address_division || bdDivisions.length === 0) return;
+  useEffect(() => {
+    if (!isEdit || !form.nominee_address_division || bdDivisions.length === 0)
+      return;
 
-  const id = getIdByName(bdDivisions, form.nominee_address_division);
-  if (id) {
-    setForm(prev => ({ ...prev, nominee_address_division: id }));
-  }
-}, [bdDivisions]);
+    const id = getIdByName(bdDivisions, form.nominee_address_division);
+    if (id) {
+      setForm((prev) => ({ ...prev, nominee_address_division: id }));
+    }
+  }, [bdDivisions]);
 
-// Nominee District
-useEffect(() => {
-  if (!isEdit || !form.nominee_district || bdDistricts.length === 0) return;
+  // Nominee District
+  useEffect(() => {
+    if (!isEdit || !form.nominee_district || bdDistricts.length === 0) return;
 
-  const id = getIdByName(bdDistricts, form.nominee_district);
-  if (id) {
-    setForm(prev => ({ ...prev, nominee_district: id }));
-  }
-}, [bdDistricts]);
+    const id = getIdByName(bdDistricts, form.nominee_district);
+    if (id) {
+      setForm((prev) => ({ ...prev, nominee_district: id }));
+    }
+  }, [bdDistricts]);
 
-// Nominee Upazila
-useEffect(() => {
-  if (!isEdit || !form.nominee_upazila || bdUpazilas.length === 0) return;
+  // Nominee Upazila
+  useEffect(() => {
+    if (!isEdit || !form.nominee_upazila || bdUpazilas.length === 0) return;
 
-  const id = getIdByName(bdUpazilas, form.nominee_upazila);
-  if (id) {
-    setForm(prev => ({ ...prev, nominee_upazila: id }));
-  }
-}, [bdUpazilas]);
+    const id = getIdByName(bdUpazilas, form.nominee_upazila);
+    if (id) {
+      setForm((prev) => ({ ...prev, nominee_upazila: id }));
+    }
+  }, [bdUpazilas]);
 
-// Nominee Union
-useEffect(() => {
-  if (!isEdit || !form.nominee_union || bdUnions.length === 0) return;
+  // Nominee Union
+  useEffect(() => {
+    if (!isEdit || !form.nominee_union || bdUnions.length === 0) return;
 
-  const id = getIdByName(bdUnions, form.nominee_union);
-  if (id) {
-    setForm(prev => ({ ...prev, nominee_union: id }));
-  }
-}, [bdUnions]);
+    const id = getIdByName(bdUnions, form.nominee_union);
+    if (id) {
+      setForm((prev) => ({ ...prev, nominee_union: id }));
+    }
+  }, [bdUnions]);
 
-// Employee Division
-useEffect(() => {
-  if (!isEdit || !form.address_division || bdEmpDivisions.length === 0) return;
+  // Employee Division
+  useEffect(() => {
+    if (!isEdit || !form.address_division || bdEmpDivisions.length === 0)
+      return;
 
-  const id = getIdByName(bdEmpDivisions, form.address_division);
-  if (id) {
-    setForm(prev => ({ ...prev, address_division: id }));
-  }
-}, [bdEmpDivisions]);
+    const id = getIdByName(bdEmpDivisions, form.address_division);
+    if (id) {
+      setForm((prev) => ({ ...prev, address_division: id }));
+    }
+  }, [bdEmpDivisions]);
 
-// Employee District
-useEffect(() => {
-  if (!isEdit || !form.district || bdEmpDistricts.length === 0) return;
+  // Employee District
+  useEffect(() => {
+    if (!isEdit || !form.district || bdEmpDistricts.length === 0) return;
 
-  const id = getIdByName(bdEmpDistricts, form.district);
-  if (id) {
-    setForm(prev => ({ ...prev, district: id }));
-  }
-}, [bdEmpDistricts]);
+    const id = getIdByName(bdEmpDistricts, form.district);
+    if (id) {
+      setForm((prev) => ({ ...prev, district: id }));
+    }
+  }, [bdEmpDistricts]);
 
-// Employee Upazila
-useEffect(() => {
-  if (!isEdit || !form.upazila || bdEmpUpazilas.length === 0) return;
+  // Employee Upazila
+  useEffect(() => {
+    if (!isEdit || !form.upazila || bdEmpUpazilas.length === 0) return;
 
-  const id = getIdByName(bdEmpUpazilas, form.upazila);
-  if (id) {
-    setForm(prev => ({ ...prev, upazila: id }));
-  }
-}, [bdEmpUpazilas]);
+    const id = getIdByName(bdEmpUpazilas, form.upazila);
+    if (id) {
+      setForm((prev) => ({ ...prev, upazila: id }));
+    }
+  }, [bdEmpUpazilas]);
 
-// Employee Union
-useEffect(() => {
-  if (!isEdit || !form.union || bdEmpUnions.length === 0) return;
+  // Employee Union
+  useEffect(() => {
+    if (!isEdit || !form.union || bdEmpUnions.length === 0) return;
 
-  const id = getIdByName(bdEmpUnions, form.union);
-  if (id) {
-    setForm(prev => ({ ...prev, union: id }));
-  }
-}, [bdEmpUnions]);
+    const id = getIdByName(bdEmpUnions, form.union);
+    if (id) {
+      setForm((prev) => ({ ...prev, union: id }));
+    }
+  }, [bdEmpUnions]);
 
   useEffect(() => {
-    if (!params?.id) return;
-    setIsEdit(true);
-    api
-      .get(`/employees/${params.id}/`)
-      .then((res) => {
-        const data = res.data;
-        // populate form with flat fields
-        const flatFields = { ...form };
+  if (!params?.id) return;
+  setIsEdit(true);
 
-        const normalizeValue = (val) => {
-          if (val === null || val === undefined) return "";
-          // If it's an FK-like object, prefer the id
-          if (typeof val === "object" && !Array.isArray(val)) {
-            if ("id" in val) return val.id;
-            return val;
-          }
+  api.get(`/employees/${params.id}/`)
+    .then((res) => {
+      const data = res.data;
 
-          // Convert datetimes -> date-only for <input type="date"> fields
-          if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
-            return val.split("T")[0];
-          }
+      /* 🔹 Fix backend inconsistent field names */
+      if (
+        !Object.prototype.hasOwnProperty.call(data, "leave_effective") &&
+        Object.prototype.hasOwnProperty.call(data, "Leave_effective")
+      ) {
+        data.leave_effective = data.Leave_effective;
+      }
 
-          // Normalize simple boolean-like strings ('yes'/'no'/'true'/'false') into booleans
-          if (typeof val === "string") {
-            const low = val.trim().toLowerCase();
-            if (low === "true" || low === "yes") return true;
-            if (low === "false" || low === "no") return false;
+      if (!Object.prototype.hasOwnProperty.call(data, "other_deduction")) {
+        if (Object.prototype.hasOwnProperty.call(data, "other_deductions")) {
+          data.other_deduction = data.other_deductions;
+        }
+      }
 
-            // Handle stringified single-item lists like "['PER']"
-            const listMatch = val
-              .trim()
-              .match(/^\[\s*['"]?([^'"\]]+)['"]?\s*\]$/);
-            if (listMatch) return listMatch[1];
-          }
-
+      const normalizeValue = (val) => {
+        if (val === null || val === undefined) return "";
+        if (typeof val === "object" && !Array.isArray(val)) {
+          if ("id" in val) return val.id;
           return val;
-        };
-
-        // Map backend fields that use inconsistent naming to our form keys
-        if (
-          !Object.prototype.hasOwnProperty.call(data, "leave_effective") &&
-          Object.prototype.hasOwnProperty.call(data, "Leave_effective")
-        ) {
-          data.leave_effective = data.Leave_effective;
         }
-        if (!Object.prototype.hasOwnProperty.call(data, "other_deduction")) {
-          if (Object.prototype.hasOwnProperty.call(data, "other_deductions")) {
-            data.other_deduction = data.other_deductions;
-          } else if (
-            Object.prototype.hasOwnProperty.call(data, "other_deduction")
-          ) {
-            data.other_deduction = data.other_deduction;
-          }
+        if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
+          return val.split("T")[0];
         }
+        if (typeof val === "string") {
+          const low = val.trim().toLowerCase();
+          if (low === "true" || low === "yes") return true;
+          if (low === "false" || low === "no") return false;
 
-        Object.keys(flatFields).forEach((k) => {
-          if (Object.prototype.hasOwnProperty.call(data, k)) {
-            flatFields[k] = normalizeValue(data[k]);
-          }
-        });
-
-        setForm(flatFields);
-        setOriginalCode(flatFields.code || data.code);
-
-        // arrays
-        setJobExperiences(
-          data.job_experiences && data.job_experiences.length
-            ? data.job_experiences
-            : [
-                {
-                  job_company_name: "",
-                  job_department: "",
-                  job_designation: "",
-                  job_start_date: "",
-                  job_end_date: "",
-                  leave_reason: "",
-                },
-              ],
-        );
-
-        setEducations(
-          data.educations && data.educations.length
-            ? data.educations
-            : [
-                {
-                  degree_title: "",
-                  major_subject: "",
-                  institute_name: "",
-                  passing_year: "",
-                  education_board: "",
-                  result: "",
-                },
-              ],
-        );
-
-        setTraining(
-          data.trainings && data.trainings.length
-            ? data.trainings
-            : [
-                {
-                  training_name: "",
-                  training_institute: "",
-                  institute_address: "",
-                  training_duration: "",
-                  training_result: "",
-                  remarks: "",
-                },
-              ],
-        );
-
-        // other docs (existing)
-        if (data.other_documents) {
-          setOtherDocs(
-            data.other_documents.map((d) => ({
-              title: d.title || "",
-              file: null,
-              id: d.id,
-              url: d.file,
-            })),
-          );
+          const listMatch = val
+            .trim()
+            .match(/^\[\s*['"]?([^'"\]]+)['"]?\s*\]$/);
+          if (listMatch) return listMatch[1];
         }
-      })
-      .catch((err) => console.error("Employee load error:", err));
-  }, [params?.id]);
+        return val;
+      };
+
+      /* 🔹 Build form object only once */
+      const newForm = { ...form };
+
+      Object.keys(newForm).forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          newForm[key] = normalizeValue(data[key]);
+        }
+      });
+
+      /* 🔹 Store existing uploaded files as URLs */
+      newForm.emp_image_docs_url = data.emp_image_docs || "";
+      newForm.emp_id_docs_url = data.emp_id_docs || "";
+      newForm.emp_birthcertificate_docs_url = data.emp_birthcertificate_docs || "";
+      newForm.nominee_id_docs_url = data.nominee_id_docs || "";
+      newForm.job_exp_certificate_docs_url = data.job_exp_certificate_docs || "";
+      newForm.education_certificate_docs_url = data.education_certificate_docs || "";
+      newForm.training_certificate_docs_url = data.training_certificate_docs || "";
+
+      /* 🔹 Clear file inputs (browser rule) */
+      newForm.emp_image_docs = null;
+      newForm.emp_id_docs = null;
+      newForm.emp_birthcertificate_docs = null;
+      newForm.nominee_id_docs = null;
+      newForm.job_exp_certificate_docs = null;
+      newForm.education_certificate_docs = null;
+      newForm.training_certificate_docs = null;
+
+      /* 🔹 Set form only ONCE */
+      setForm(newForm);
+      setOriginalCode(data.code);
+
+      /* 🔹 Arrays */
+      setJobExperiences(
+        data.job_experiences?.length
+          ? data.job_experiences
+          : [
+              {
+                job_company_name: "",
+                job_department: "",
+                job_designation: "",
+                job_start_date: "",
+                job_end_date: "",
+                leave_reason: "",
+              },
+            ]
+      );
+
+      setEducations(
+        data.educations?.length
+          ? data.educations
+          : [
+              {
+                degree_title: "",
+                major_subject: "",
+                institute_name: "",
+                passing_year: "",
+                education_board: "",
+                result: "",
+              },
+            ]
+      );
+
+      setTraining(
+        data.trainings?.length
+          ? data.trainings
+          : [
+              {
+                training_name: "",
+                training_institute: "",
+                institute_address: "",
+                training_duration: "",
+                training_result: "",
+                remarks: "",
+              },
+            ]
+      );
+
+      /* 🔹 Other documents */
+      if (data.other_documents) {
+        setOtherDocs(
+          data.other_documents.map((d) => ({
+            title: d.title || "",
+            file: null,
+            id: d.id,
+            url: d.file,
+          }))
+        );
+      }
+    })
+    .catch((err) => console.error("Employee load error:", err));
+}, [params?.id]);
 
 
   // Add/Remove Job Experience Entries
@@ -1237,7 +1257,7 @@ useEffect(() => {
               return foundDiv ? foundDiv.name : val;
             }
             return "";
-            // for nominee
+          // for nominee
           case "nominee_district":
           case "district":
             if (val) {
@@ -1248,7 +1268,7 @@ useEffect(() => {
             }
             return "";
 
-              // for employee
+          // for employee
           case "district":
             if (val) {
               const foundDist = bdEmpDistricts.find(
@@ -1257,7 +1277,7 @@ useEffect(() => {
               return foundDist ? foundDist.name : val;
             }
             return "";
-            // for nominee
+          // for nominee
           case "nominee_upazila":
           case "upazila":
             if (val) {
@@ -1268,7 +1288,7 @@ useEffect(() => {
             }
             return "";
 
-            // for employee
+          // for employee
           case "upazila":
             if (val) {
               const foundUp = bdEmpUpazilas.find(
@@ -1277,7 +1297,7 @@ useEffect(() => {
               return foundUp ? foundUp.name : val;
             }
             return "";
-            // for nominee
+          // for nominee
           case "nominee_union":
           case "union":
             if (val) {
@@ -1288,7 +1308,7 @@ useEffect(() => {
             }
             return "";
 
-              // for employee
+          // for employee
           case "union":
             if (val) {
               const foundUnion = bdEmpUnions.find(
@@ -3775,23 +3795,55 @@ useEffect(() => {
                 />
               </div>
               {/* Employee Image */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Image (JPG,JPEG,PNG){" "}
-                </label>
-                <input
-                  type="file"
-                  name="emp_image_docs"
-                  accept=".jpg,.jpeg,.png"
-                  className="border border-gray-300 p-2 rounded w-full"
-                  onChange={handleFileChange}
-                />
-                {form.emp_image_docs && (
-                  <p className="text-xs text-green-600 mt-1">
-                    ✓ File selected: {form.emp_image_docs.name}
-                  </p>
-                )}
-              </div>
+<div>
+  <label className="block text-sm font-medium mb-1">
+    Image (JPG, JPEG, PNG)
+  </label>
+
+  <input
+    type="file"
+    name="emp_image_docs"
+    accept=".jpg,.jpeg,.png"
+    className="border border-gray-300 p-2 rounded w-full"
+    onChange={handleFileChange}
+  />
+
+  {/* New file selected */}
+  {form.emp_image_docs && (
+    <p className="text-xs text-green-600 mt-1">
+      ✓ File selected: {form.emp_image_docs.name}
+    </p>
+  )}
+
+  {/* Existing file */}
+  {form.emp_image_docs_url && (
+    <div className="flex gap-2 items-center mt-1">
+      <a
+        href={form.emp_image_docs_url}
+        target="_blank"
+        rel="noreferrer"
+        className="text-blue-600 text-sm underline"
+      >
+        View current
+      </a>
+
+      <button
+        type="button"
+        className="text-red-600 text-xs"
+        onClick={() =>
+          setForm((p) => ({
+            ...p,
+            emp_image_docs_url: "",
+            emp_image_docs: null,
+          }))
+        }
+      >
+        ❌ Remove
+      </button>
+    </div>
+  )}
+</div>
+
               {/* Employee NID */}
               <div>
                 <label className="block text-sm font-medium mb-1">
