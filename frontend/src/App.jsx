@@ -27,9 +27,10 @@ import LeaveApproval from "./pages/leaves/LeaveApproval";
 import LeaveEncash from "./pages/leaves/LeaveEncash";
 
 // Payroll
-import GenerateSalary from "./pages/payroll/GenerateSalary";
-import SalarySheet from "./pages/payroll/SalarySheet";
-import Payslip from "./pages/payroll/Payslip";
+import SalaryPolicy from "./pages/salary-payroll/SalaryPolicy";
+import GenerateSalary from "./pages/salary-payroll/GenerateSalary";
+import SalarySheet from "./pages/salary-payroll/SalarySheet";
+import Payslip from "./pages/salary-payroll/Payslip";
 
 // PF
 import PFSettings from "./pages/pf/PFSettings";
@@ -109,6 +110,7 @@ function App() {
         <Route path="/leave/encash" element={<LeaveEncash />} />
 
         {/* Payroll */}
+        <Route path="/payroll/salary-policy" element={<SalaryPolicy />} />
         <Route path="/payroll/generate" element={<GenerateSalary />} />
         <Route path="/payroll/salary-sheet" element={<SalarySheet />} />
         <Route path="/payroll/payslip" element={<Payslip />} />

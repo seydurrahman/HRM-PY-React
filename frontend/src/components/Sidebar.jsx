@@ -66,10 +66,10 @@ const Sidebar = () => {
       roles: ["Admin", "HR","admin","hr"],
       children: [
         {
-          label: "Earnings & Deductions",
-          path: "/payroll/earnings-deductions",
+          label: "Salary Policy",
+          path: "/payroll/salary-policy",
         },
-        { label: "Generate Salary Slips", path: "/payroll/generate" },
+        { label: "Salary Generate", path: "/payroll/generate" },
         { label: "Salary Sheet", path: "/payroll/salary-sheet" },
         {
           label: "Payslip",
@@ -153,9 +153,9 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-60 hidden md:flex flex-col border-r bg-white">
+    <aside className="w-64 hidden md:flex flex-col bg-white h-full border-r">
       <div className="h-14 flex items-center px-4 border-b font-bold">
-        HRM Panel
+        HRM Management
       </div>
 
       <nav className="flex-1 overflow-y-auto p-2 space-y-1">

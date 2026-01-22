@@ -1537,7 +1537,7 @@ const EmployeeCreate = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="space-y-4">
       {/* Tab Navigation */}
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
         {tabs.map((tab) => (

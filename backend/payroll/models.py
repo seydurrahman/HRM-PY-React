@@ -69,3 +69,5 @@ class Salary(models.Model):
 
     def __str__(self):
         return f"{self.employee.code} Salary {self.month}/{self.year}"
+
+

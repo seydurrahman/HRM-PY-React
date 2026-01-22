@@ -33,16 +33,22 @@ const DashboardLayout = () => {
   if (!allowed) return null;  // Prevent flicker
 
   return (
-    <div className="h-screen flex bg-slate-100">
+    <div className="h-screen flex bg-slate-100 overflow-hidden">
+    {/* Sidebar with its own scrollbar */}
+    <aside className="w-64 min-w-[16rem] shrink-0 h-full overflow-y-auto bg-white">
       <Sidebar />
+    </aside>
 
-      <div className="flex flex-1 flex-col">
-        <Navbar />
-        <main className="flex-1 overflow-y-auto p-4">
-          <Outlet />
-        </main>
-      </div>
+    {/* Main area */}
+    <div className="flex flex-1 flex-col h-full overflow-hidden">
+      <Navbar />
+
+      {/* Main content without page-level scroll */}
+      <main className="flex-1 p-4 overflow-y-auto overflow-x-hidden">
+        <Outlet />
+      </main>
     </div>
+  </div>
   );
 };
 

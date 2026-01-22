@@ -178,29 +178,27 @@ const EmployeeList = () => {
       </div>
 
       {/* Search */}
-      <div className="flex gap-4 items-end mt-4 mb-2 flex-col">
-        <div className="w-2/4 block mx-auto">
+      <div className="flex gap-4 items-end mt-2 mb-1 flex-col">
+        <div className="w-2/4 flex mx-auto justify-between items-center gap-2 mb-2">
+          <div className=" text-xs text-gray-600">
+            Showing {filteredEmployees.length} / {employees.length}
+          </div>
           <input
-            className="border border-purple-600 p-2 w-full rounded cursor-pointer"
+            className="border border-purple-600 p-1 w-full rounded cursor-pointer"
             placeholder={`Search.....`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={employees.length === 0}
           />
-          <div className="flex justify-between mt-1">
-            <div className=" text-sm text-gray-600">
-              Showing {filteredEmployees.length} / {employees.length}
-            </div>
-            <div>
-              <button
-                className="ml-2 px-2 py-1 bg-gray-100 rounded text-sm cursor-pointer"
-                onClick={() => {
-                  setSearchQuery("");
-                }}
-              >
-                Clear
-              </button>
-            </div>
+          <div>
+            <button
+              className="ml-2 px-2 py-1 bg-gray-100 rounded text-xs cursor-pointer"
+              onClick={() => {
+                setSearchQuery("");
+              }}
+            >
+              Clear
+            </button>
           </div>
         </div>
       </div>
