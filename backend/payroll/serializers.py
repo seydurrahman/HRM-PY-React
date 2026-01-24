@@ -1,7 +1,23 @@
 from rest_framework import serializers
 from .models import (
-    Increment, Promotion, BonusPolicy, BonusPayment, Salary
+    SalaryPolicy,
+    Increment,
+    Promotion,
+    BonusPolicy,
+    BonusPayment,
+    Salary,
 )
+
+
+class SalaryPolicySerializer(serializers.ModelSerializer):
+    employee_type_name = serializers.CharField(
+        source="employee_type.name", read_only=True
+    )
+
+    class Meta:
+        model = SalaryPolicy
+        fields = "__all__"
+
 
 class IncrementSerializer(serializers.ModelSerializer):
     employee_name = serializers.CharField(source="employee.first_name", read_only=True)

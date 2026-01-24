@@ -22,6 +22,7 @@ from leaves.views import (
 )
 
 from payroll.views import (
+    SalaryPolicyViewSet,
     SalaryViewSet,
     IncrementViewSet,
     PromotionViewSet,
@@ -72,7 +73,8 @@ router.register(r"leave-balances", LeaveBalanceViewSet, basename="leave-balances
 router.register(r"leave-apply", LeaveApplicationViewSet, basename="leave-apply")
 router.register(r"leave-encash", LeaveEncashmentViewSet, basename="leave-encash")
 
-router.register(r"salary", SalaryViewSet)
+router.register(r"salary-policies", SalaryPolicyViewSet, basename="salary-policies")
+router.register(r"salary", SalaryViewSet, basename="salary")
 router.register(r"increment", IncrementViewSet)
 router.register(r"promotion", PromotionViewSet)
 router.register(r"bonus-policy", BonusPolicyViewSet)

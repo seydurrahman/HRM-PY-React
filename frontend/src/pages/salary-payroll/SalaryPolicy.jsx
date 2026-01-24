@@ -3,6 +3,9 @@ import api from "../../lib/api";
 
 function SalaryPolicy() {
   const [categories, setCategories] = useState([]);
+  const [policies, setPolicies] = useState([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [policy, setPolicy] = useState({
     employee_type: "",
     gross: "",
@@ -21,9 +24,10 @@ function SalaryPolicy() {
 
   const [errors, setErrors] = useState({});
 
-  // Fetch employee categories on component mount
+  // Fetch employee categories and salary policies on component mount
   useEffect(() => {
     fetchCategories();
+    fetchPolicies();
   }, []);
 
   // Real-time validation whenever policy changes
@@ -38,6 +42,15 @@ function SalaryPolicy() {
       setCategories(res.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchPolicies = async () => {
+    try {
+      const res = await api.get("/salary-policies/");
+      setPolicies(res.data);
+    } catch (error) {
+      console.error("Error fetching policies:", error);
     }
   };
 
@@ -271,12 +284,263 @@ function SalaryPolicy() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Final Salary Policy:", policy);
-      console.log("Final Basic:", calculateBasic());
-      console.log("Derived Basic (for allowances):", calculateDerivedBasic());
-      console.log("Total Allowances:", getTotalAllowances());
-      alert("Salary policy validated successfully!");
+      const saveData = {
+        employee_type: policy.employee_type,
+        gross: Number(policy.gross),
+        basic: policy.basic,
+        house_rent: policy.house_rent,
+        medical: policy.medical,
+        food: policy.food,
+        transport: policy.transport,
+        others1: policy.others1,
+        others2: policy.others2,
+      };
+
+      if (editingId) {
+        // Update existing policy
+        api
+          .put(`/salary-policies/${editingId}/`, saveData)
+          .then(() => {
+            alert("Salary policy updated successfully!");
+            setIsCreating(false);
+            setEditingId(null);
+            resetForm();
+            fetchPolicies();
+          })
+          .catch((error) => {
+            console.error("Error updating policy:", error);
+            alert("Failed to update salary policy");
+          });
+      } else {
+        // Create new policy
+        api
+          .post("/salary-policies/", saveData)
+          .then(() => {
+            alert("Salary policy created successfully!");
+            setIsCreating(false);
+            resetForm();
+            fetchPolicies();
+          })
+          .catch((error) => {
+            console.error("Error creating policy:", error);
+            alert("Failed to create salary policy");
+          });
+      }
     }
+  };
+
+  const resetForm = () => {
+    setPolicy({
+      employee_type: "",
+      gross: "",
+      basic: {
+        type: "percent",
+        value: "",
+        divided: 1.5,
+      },
+      house_rent: { type: "percent", base: "gross", value: "" },
+      medical: { type: "percent", base: "gross", value: "" },
+      food: { type: "percent", base: "gross", value: "" },
+      transport: { type: "percent", base: "gross", value: "" },
+      others1: { type: "percent", base: "gross", value: "" },
+      others2: { type: "percent", base: "gross", value: "" },
+    });
+    setErrors({});
+  };
+
+  const handleCreate = () => {
+    resetForm();
+    setEditingId(null);
+    setIsCreating(true);
+  };
+
+  const handleEdit = (policyData) => {
+    setPolicy(policyData);
+    setEditingId(policyData.id);
+    setIsCreating(true);
+  };
+
+  const handleCancel = () => {
+    setIsCreating(false);
+    setEditingId(null);
+    resetForm();
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this policy?")) {
+      api
+        .delete(`/salary-policies/${id}/`)
+        .then(() => {
+          alert("Salary policy deleted successfully!");
+          fetchPolicies();
+        })
+        .catch((error) => {
+          console.error("Error deleting policy:", error);
+          alert("Failed to delete salary policy");
+        });
+    }
+  };
+
+  // Helper to calculate derived basic from stored policy data (using iterative convergence for formula type)
+  const calculateDerivedBasicFromPolicy = (policyData) => {
+    const gross = Number(policyData.gross || 0);
+    const basicConfig =
+      typeof policyData.basic === "object"
+        ? policyData.basic
+        : { type: "percent", value: 0 };
+
+    if (basicConfig.type === "manual") {
+      return Number(basicConfig.value || 0);
+    }
+
+    if (basicConfig.type === "percent") {
+      return (gross * Number(basicConfig.value || 0)) / 100;
+    }
+
+    // Formula type: use iterative convergence
+    if (basicConfig.type === "formula") {
+      let derived = gross * 0.5; // Initial guess
+      const maxIterations = 20;
+      const tolerance = 0.01;
+
+      for (let i = 0; i < maxIterations; i++) {
+        // Calculate allowances (medical, food, transport) with current derived basic
+        let medical = 0;
+        if (policyData.medical) {
+          if (policyData.medical.type === "manual") {
+            medical = Number(policyData.medical.value || 0);
+          } else if (policyData.medical.type === "percent") {
+            const base = policyData.medical.base === "basic" ? derived : gross;
+            medical = (base * Number(policyData.medical.value || 0)) / 100;
+          }
+        }
+
+        let food = 0;
+        if (policyData.food) {
+          if (policyData.food.type === "manual") {
+            food = Number(policyData.food.value || 0);
+          } else if (policyData.food.type === "percent") {
+            const base = policyData.food.base === "basic" ? derived : gross;
+            food = (base * Number(policyData.food.value || 0)) / 100;
+          }
+        }
+
+        let transport = 0;
+        if (policyData.transport) {
+          if (policyData.transport.type === "manual") {
+            transport = Number(policyData.transport.value || 0);
+          } else if (policyData.transport.type === "percent") {
+            const base =
+              policyData.transport.base === "basic" ? derived : gross;
+            transport = (base * Number(policyData.transport.value || 0)) / 100;
+          }
+        }
+
+        const totalAllowances = medical + food + transport;
+
+        // Calculate new derived basic using formula
+        const m = Number(basicConfig.divided || 1);
+        const newDerived = (gross - totalAllowances) / m;
+
+        // Check convergence
+        if (Math.abs(newDerived - derived) < tolerance) {
+          return newDerived > 0 ? newDerived : gross * 0.5;
+        }
+
+        derived = newDerived;
+      }
+
+      return derived > 0 ? derived : gross * 0.5;
+    }
+
+    return gross * 0.5;
+  };
+
+  // Helper to calculate basic from stored policy data
+  const calculateBasicFromPolicy = (policyData) => {
+    const gross = Number(policyData.gross || 0);
+    const basicConfig =
+      typeof policyData.basic === "object"
+        ? policyData.basic
+        : { type: "percent", value: 0 };
+
+    if (basicConfig.type === "manual") {
+      return Number(basicConfig.value || 0).toFixed(2);
+    }
+
+    if (basicConfig.type === "percent") {
+      return ((gross * Number(basicConfig.value || 0)) / 100).toFixed(2);
+    }
+
+    if (basicConfig.type === "formula") {
+      // Calculate total allowances
+      let medical = 0;
+      if (policyData.medical) {
+        if (policyData.medical.type === "manual") {
+          medical = Number(policyData.medical.value || 0);
+        } else if (policyData.medical.type === "percent") {
+          const derivedBasic = calculateDerivedBasicFromPolicy(policyData);
+          const base =
+            policyData.medical.base === "basic" ? derivedBasic : gross;
+          medical = (base * Number(policyData.medical.value || 0)) / 100;
+        }
+      }
+
+      let food = 0;
+      if (policyData.food) {
+        if (policyData.food.type === "manual") {
+          food = Number(policyData.food.value || 0);
+        } else if (policyData.food.type === "percent") {
+          const derivedBasic = calculateDerivedBasicFromPolicy(policyData);
+          const base = policyData.food.base === "basic" ? derivedBasic : gross;
+          food = (base * Number(policyData.food.value || 0)) / 100;
+        }
+      }
+
+      let transport = 0;
+      if (policyData.transport) {
+        if (policyData.transport.type === "manual") {
+          transport = Number(policyData.transport.value || 0);
+        } else if (policyData.transport.type === "percent") {
+          const derivedBasic = calculateDerivedBasicFromPolicy(policyData);
+          const base =
+            policyData.transport.base === "basic" ? derivedBasic : gross;
+          transport = (base * Number(policyData.transport.value || 0)) / 100;
+        }
+      }
+
+      const totalAllowances = medical + food + transport;
+
+      // Final Basic = (Gross - TotalAllowances) / Divided
+      const m = Number(basicConfig.divided || 1);
+      const result = (gross - totalAllowances) / m;
+      return (result > 0 ? result : 0).toFixed(2);
+    }
+
+    return "0.00";
+  };
+
+  // Helper to calculate component values from stored policy data
+  const calculateComponentFromPolicy = (policyData, component) => {
+    const gross = Number(policyData.gross || 0);
+
+    // For components based on basic, use the derived basic
+    const derivedBasic = calculateDerivedBasicFromPolicy(policyData);
+
+    const componentConfig = policyData[component];
+    if (!componentConfig) return "0.00";
+
+    if (componentConfig.type === "manual") {
+      return Number(componentConfig.value || 0).toFixed(2);
+    }
+
+    if (componentConfig.type === "percent") {
+      // Determine the base (gross or basic)
+      const base = componentConfig.base === "basic" ? derivedBasic : gross;
+      return ((base * Number(componentConfig.value || 0)) / 100).toFixed(2);
+    }
+
+    return "0.00";
   };
 
   /* ================= UI ================= */
@@ -284,217 +548,308 @@ function SalaryPolicy() {
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Salary Policy</h1>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm space-y-6">
-        {/* Employee Type */}
-        <div>
-          <label className="text-sm font-medium">
-            Employee Type <span className="text-red-500">*</span>
-          </label>
-          <select
-            className="border p-2 rounded w-full"
-            value={policy.employee_type}
-            onChange={(e) =>
-              setPolicy({ ...policy, employee_type: e.target.value })
-            }
-          >
-            <option value="">Select Employee Category</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
+      {!isCreating ? (
+        // LIST VIEW
+        <div className="bg-white p-4 rounded-xl shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Salary Policies</h2>
+            <button
+              onClick={handleCreate}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              + Create New Policy
+            </button>
+          </div>
 
-        {/* Gross */}
-        <div>
-          <label className="text-sm font-medium">
-            Gross Salary <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            className="border p-2 rounded w-full"
-            value={policy.gross}
-            onChange={(e) =>
-              setPolicy({
-                ...policy,
-                gross: e.target.value < 0 ? 0 : e.target.value,
-              })
-            }
-          />
-        </div>
-
-        {/* ================= BASIC ================= */}
-        <div
-          className={`space-y-2 border p-3 rounded ${errors.basic ? "border-red-500 bg-red-50" : ""}`}
-        >
-          <label className="text-sm font-semibold">Basic Salary Rule</label>
-
-          <select
-            className="border p-2 rounded w-full"
-            value={policy.basic.type}
-            onChange={(e) =>
-              setPolicy({
-                ...policy,
-                basic: {
-                  ...policy.basic,
-                  type: e.target.value,
-                  value: "",
-                },
-              })
-            }
-          >
-            <option value="percent">From Gross (%)</option>
-            <option value="manual">Manual Amount</option>
-            <option value="formula">Formula(G.S-T.All(ex-H/R))/1.5</option>
-          </select>
-
-          {policy.basic.type === "percent" && (
-            <input
-              type="number"
-              className={`border p-2 rounded w-full ${errors.basic ? "border-red-500 bg-red-50" : ""}`}
-              placeholder="Basic %"
-              value={policy.basic.value}
-              onChange={(e) => {
-                const val = validateValue("percent", e.target.value, "gross");
-                setPolicy({
-                  ...policy,
-                  basic: { ...policy.basic, value: val },
-                });
-              }}
-            />
-          )}
-
-          {policy.basic.type === "manual" && (
-            <input
-              type="number"
-              className={`border p-2 rounded w-full ${errors.basic ? "border-red-500 bg-red-50" : ""}`}
-              placeholder="Basic Amount"
-              value={policy.basic.value}
-              onChange={(e) => {
-                const val = validateValue("manual", e.target.value, "gross");
-                setPolicy({
-                  ...policy,
-                  basic: { ...policy.basic, value: val },
-                });
-              }}
-            />
-          )}
-
-          {policy.basic.type === "formula" && (
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="number"
-                step="0.1"
-                className="border p-2 rounded w-full"
-                placeholder="Divided (e.g. 1.5)"
-                value={policy.basic.divided}
-                onChange={(e) =>
-                  setPolicy({
-                    ...policy,
-                    basic: {
-                      ...policy.basic,
-                      divided: e.target.value,
-                    },
-                  })
-                }
-              />
-              <div className="flex items-center font-semibold">
-                Total Allowances: {getTotalAllowances().toFixed(2)}
-              </div>
+          {policies.length === 0 ? (
+            <p className="text-gray-500 text-center py-6">
+              No salary policies found. Create one to get started.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="bg-gray-100 border">
+                    <th className="border p-2 text-left">Employee Type</th>
+                    <th className="border p-2 text-right">Gross</th>
+                    <th className="border p-2 text-right">Basic</th>
+                    <th className="border p-2 text-right">House Rent</th>
+                    <th className="border p-2 text-right">Medical</th>
+                    <th className="border p-2 text-right">Food</th>
+                    <th className="border p-2 text-right">Transport</th>
+                    <th className="border p-2 text-right">Others1</th>
+                    <th className="border p-2 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {policies.map((policyItem) => (
+                    <tr key={policyItem.id} className="border hover:bg-gray-50">
+                      <td className="border p-2">
+                        {policyItem.employee_type_name ||
+                          policyItem.employee_type}
+                      </td>
+                      <td className="border p-2 text-right">
+                        {Number(policyItem.gross).toFixed(2)}
+                      </td>
+                      <td className="border p-2 text-right font-semibold">
+                        {calculateBasicFromPolicy(policyItem)}
+                      </td>
+                      <td className="border p-2 text-right">
+                        {calculateComponentFromPolicy(policyItem, "house_rent")}
+                      </td>
+                      <td className="border p-2 text-right">
+                        {calculateComponentFromPolicy(policyItem, "medical")}
+                      </td>
+                      <td className="border p-2 text-right">
+                        {calculateComponentFromPolicy(policyItem, "food")}
+                      </td>
+                      <td className="border p-2 text-right">
+                        {calculateComponentFromPolicy(policyItem, "transport")}
+                      </td>
+                      <td className="border p-2 text-right">
+                        {calculateComponentFromPolicy(policyItem, "others1")}
+                      </td>
+                      <td className="border p-2 text-center space-x-1">
+                        <button
+                          onClick={() => handleEdit(policyItem)}
+                          className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(policyItem.id)}
+                          className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-
-          <div className="font-semibold text-green-700">
-            Final Basic = {calculateBasic().toFixed(2)}
+        </div>
+      ) : (
+        // FORM VIEW
+        <div className="bg-white p-4 rounded-xl shadow-sm space-y-6">
+          {/* Employee Type */}
+          <div>
+            <label className="text-sm font-medium">
+              Employee Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              className="border p-2 rounded w-full"
+              value={policy.employee_type}
+              onChange={(e) =>
+                setPolicy({ ...policy, employee_type: e.target.value })
+              }
+            >
+              <option value="">Select Employee Category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="text-xs text-gray-600">
-            Derived Basic (for allowances) ={" "}
-            {calculateDerivedBasic().toFixed(2)}
+          {/* Gross */}
+          <div>
+            <label className="text-sm font-medium">
+              Gross Salary <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              className="border p-2 rounded w-full"
+              value={policy.gross}
+              onChange={(e) =>
+                setPolicy({
+                  ...policy,
+                  gross: e.target.value < 0 ? 0 : e.target.value,
+                })
+              }
+            />
           </div>
 
-          {errors.basic && (
-            <p className="text-red-500 text-xs">{errors.basic}</p>
-          )}
-        </div>
-
-        {/* ================= ALLOWANCES ================= */}
-
-        <AllowanceBlock
-          title="House Rent"
-          item={policy.house_rent}
-          showBase
-          setItem={(val) => setPolicy({ ...policy, house_rent: val })}
-          validateValue={validateValue}
-          calculateAmount={calculateAmount}
-          fieldError={null}
-        />
-
-        <AllowanceBlock
-          title="Medical"
-          item={policy.medical}
-          showBase
-          setItem={(val) => setPolicy({ ...policy, medical: val })}
-          validateValue={validateValue}
-          calculateAmount={calculateAmount}
-          fieldError={null}
-        />
-
-        <AllowanceBlock
-          title="Transport"
-          item={policy.transport}
-          showBase
-          setItem={(val) => setPolicy({ ...policy, transport: val })}
-          validateValue={validateValue}
-          calculateAmount={calculateAmount}
-          fieldError={null}
-        />
-
-        <AllowanceBlock
-          title="Food"
-          item={policy.food}
-          showBase
-          setItem={(val) => setPolicy({ ...policy, food: val })}
-          validateValue={validateValue}
-          calculateAmount={calculateAmount}
-          fieldError={null}
-        />
-
-        <AllowanceBlock
-          title="Others1"
-          item={policy.others1}
-          showBase={false}
-          setItem={(val) => setPolicy({ ...policy, others1: val })}
-          validateValue={validateValue}
-          calculateAmount={calculateAmount}
-          disabled={getTotalWithoutOthers1() >= Number(policy.gross || 0)}
-          disabledMessage={
-            getTotalWithoutOthers1() >= Number(policy.gross || 0)
-              ? "Total already equals gross salary"
-              : ""
-          }
-          fieldError={errors.others1 || null}
-        />
-
-        <div className="text-right font-semibold text-blue-700">
-          Total (Basic + HR + Medical + Food + Transport) ={" "}
-          {getGrandTotal().toFixed(2)}
-        </div>
-
-        <div className="text-right font-semibold text-purple-700">
-          Others1 (Gross - Total) = {calculateOthers1Remainder().toFixed(2)}
-        </div>
-
-        <div className="text-right">
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-slate-900 text-white rounded"
+          {/* ================= BASIC ================= */}
+          <div
+            className={`space-y-2 border p-3 rounded ${errors.basic ? "border-red-500 bg-red-50" : ""}`}
           >
-            Save Policy
-          </button>
+            <label className="text-sm font-semibold">Basic Salary Rule</label>
+
+            <select
+              className="border p-2 rounded w-full"
+              value={policy.basic.type}
+              onChange={(e) =>
+                setPolicy({
+                  ...policy,
+                  basic: {
+                    ...policy.basic,
+                    type: e.target.value,
+                    value: "",
+                  },
+                })
+              }
+            >
+              <option value="percent">From Gross (%)</option>
+              <option value="manual">Manual Amount</option>
+              <option value="formula">Formula(G.S-T.All(ex-H/R))/1.5</option>
+            </select>
+
+            {policy.basic.type === "percent" && (
+              <input
+                type="number"
+                className={`border p-2 rounded w-full ${errors.basic ? "border-red-500 bg-red-50" : ""}`}
+                placeholder="Basic %"
+                value={policy.basic.value}
+                onChange={(e) => {
+                  const val = validateValue("percent", e.target.value, "gross");
+                  setPolicy({
+                    ...policy,
+                    basic: { ...policy.basic, value: val },
+                  });
+                }}
+              />
+            )}
+
+            {policy.basic.type === "manual" && (
+              <input
+                type="number"
+                className={`border p-2 rounded w-full ${errors.basic ? "border-red-500 bg-red-50" : ""}`}
+                placeholder="Basic Amount"
+                value={policy.basic.value}
+                onChange={(e) => {
+                  const val = validateValue("manual", e.target.value, "gross");
+                  setPolicy({
+                    ...policy,
+                    basic: { ...policy.basic, value: val },
+                  });
+                }}
+              />
+            )}
+
+            {policy.basic.type === "formula" && (
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="number"
+                  step="0.1"
+                  className="border p-2 rounded w-full"
+                  placeholder="Divided (e.g. 1.5)"
+                  value={policy.basic.divided}
+                  onChange={(e) =>
+                    setPolicy({
+                      ...policy,
+                      basic: {
+                        ...policy.basic,
+                        divided: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <div className="flex items-center font-semibold">
+                  Total Allowances: {getTotalAllowances().toFixed(2)}
+                </div>
+              </div>
+            )}
+
+            <div className="font-semibold text-green-700">
+              Final Basic = {calculateBasic().toFixed(2)}
+            </div>
+
+            <div className="text-xs text-gray-600">
+              Derived Basic (for allowances) ={" "}
+              {calculateDerivedBasic().toFixed(2)}
+            </div>
+
+            {errors.basic && (
+              <p className="text-red-500 text-xs">{errors.basic}</p>
+            )}
+          </div>
+
+          {/* ================= ALLOWANCES ================= */}
+
+          <AllowanceBlock
+            title="House Rent"
+            item={policy.house_rent}
+            showBase
+            setItem={(val) => setPolicy({ ...policy, house_rent: val })}
+            validateValue={validateValue}
+            calculateAmount={calculateAmount}
+            fieldError={null}
+          />
+
+          <AllowanceBlock
+            title="Medical"
+            item={policy.medical}
+            showBase
+            setItem={(val) => setPolicy({ ...policy, medical: val })}
+            validateValue={validateValue}
+            calculateAmount={calculateAmount}
+            fieldError={null}
+          />
+
+          <AllowanceBlock
+            title="Transport"
+            item={policy.transport}
+            showBase
+            setItem={(val) => setPolicy({ ...policy, transport: val })}
+            validateValue={validateValue}
+            calculateAmount={calculateAmount}
+            fieldError={null}
+          />
+
+          <AllowanceBlock
+            title="Food"
+            item={policy.food}
+            showBase
+            setItem={(val) => setPolicy({ ...policy, food: val })}
+            validateValue={validateValue}
+            calculateAmount={calculateAmount}
+            fieldError={null}
+          />
+
+          <AllowanceBlock
+            title="Others1"
+            item={policy.others1}
+            showBase={false}
+            setItem={(val) => setPolicy({ ...policy, others1: val })}
+            validateValue={validateValue}
+            calculateAmount={calculateAmount}
+            disabled={getTotalWithoutOthers1() >= Number(policy.gross || 0)}
+            disabledMessage={
+              getTotalWithoutOthers1() >= Number(policy.gross || 0)
+                ? "Total already equals gross salary"
+                : ""
+            }
+            fieldError={errors.others1 || null}
+          />
+
+          <div className="text-right font-semibold text-blue-700">
+            Total (Basic + HR + Medical + Food + Transport) ={" "}
+            {getGrandTotal().toFixed(2)}
+          </div>
+
+          <div className="text-right font-semibold text-purple-700">
+            Others1 (Gross - Total) = {calculateOthers1Remainder().toFixed(2)}
+          </div>
+
+          <div className="text-right">
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-slate-900 text-white rounded mr-2 hover:bg-slate-800"
+            >
+              {editingId ? "Update Policy" : "Save Policy"}
+            </button>
+            <button
+              onClick={handleCancel}
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

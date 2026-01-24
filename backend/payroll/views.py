@@ -7,14 +7,30 @@ from employees.models import Employee
 from attendance.models import Attendance
 from settings_app.models import SalarySetting
 from .models import (
-    Increment, Promotion, BonusPolicy, BonusPayment, Salary
+    SalaryPolicy,
+    Increment,
+    Promotion,
+    BonusPolicy,
+    BonusPayment,
+    Salary,
 )
 from .serializers import (
-    IncrementSerializer, PromotionSerializer, BonusPolicySerializer,
-    BonusPaymentSerializer, SalarySerializer
+    SalaryPolicySerializer,
+    IncrementSerializer,
+    PromotionSerializer,
+    BonusPolicySerializer,
+    BonusPaymentSerializer,
+    SalarySerializer,
 )
 
 import calendar
+
+
+class SalaryPolicyViewSet(viewsets.ModelViewSet):
+    queryset = SalaryPolicy.objects.all()
+    serializer_class = SalaryPolicySerializer
+    filterset_fields = ["employee_type"]
+
 
 class SalaryViewSet(viewsets.ModelViewSet):
     queryset = Salary.objects.all()
@@ -43,9 +59,12 @@ class SalaryViewSet(viewsets.ModelViewSet):
             other = setting.others
 
             # Calculate OT
-            ot_hours = Attendance.objects.filter(
-                employee=emp, date__month=month, date__year=year
-            ).aggregate(total=models.Sum("ot_hours"))["total"] or 0
+            ot_hours = (
+                Attendance.objects.filter(
+                    employee=emp, date__month=month, date__year=year
+                ).aggregate(total=models.Sum("ot_hours"))["total"]
+                or 0
+            )
             ot_amount = ot_hours * 100  # Example OT rate
 
             # PF
@@ -62,7 +81,9 @@ class SalaryViewSet(viewsets.ModelViewSet):
             # Tax (simple example)
             tax = basic * 0.05
 
-            total_earnings = basic + house_rent + medical + transport + other + ot_amount
+            total_earnings = (
+                basic + house_rent + medical + transport + other + ot_amount
+            )
             total_deductions = pf_employee + loan_deduction + tax
             net = total_earnings - total_deductions
 
@@ -84,10 +105,12 @@ class SalaryViewSet(viewsets.ModelViewSet):
                     total_earnings=total_earnings,
                     total_deductions=total_deductions,
                     net_salary=net,
-                )
+                ),
             )
 
         return Response({"message": "Salary generated!"})
+
+
 # ----------------------------------------------------
 # Increment ViewSet
 # ----------------------------------------------------

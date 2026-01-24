@@ -1,6 +1,28 @@
 from django.db import models
 from employees.models import Employee
-from settings_app.models import SalarySetting
+from settings_app.models import SalarySetting, EmployeeCategory
+
+
+class SalaryPolicy(models.Model):
+    employee_type = models.ForeignKey(EmployeeCategory, on_delete=models.CASCADE)
+    gross = models.DecimalField(max_digits=12, decimal_places=2)
+    basic = models.JSONField(default=dict)
+    house_rent = models.JSONField(default=dict)
+    medical = models.JSONField(default=dict)
+    food = models.JSONField(default=dict)
+    transport = models.JSONField(default=dict)
+    others1 = models.JSONField(default=dict)
+    others2 = models.JSONField(default=dict)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("employee_type",)
+
+    def __str__(self):
+        return f"Salary Policy - {self.employee_type.name}"
+
 
 class Increment(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
@@ -69,5 +91,3 @@ class Salary(models.Model):
 
     def __str__(self):
         return f"{self.employee.code} Salary {self.month}/{self.year}"
-
-
