@@ -158,3 +158,13 @@ class PFSetting(models.Model):
 class OTSetting(models.Model):
     is_active = models.BooleanField(default=True)
     rate_multiplier = models.DecimalField(max_digits=5, decimal_places=2, default=1.5)
+
+class EmployeeCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+    
+
+

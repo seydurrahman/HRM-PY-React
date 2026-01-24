@@ -141,6 +141,7 @@ const Sidebar = () => {
         { label: "Table", path: "/settings/table" },
         { label: "Designation", path: "/settings/designations" },
         { label: "Grade", path: "/settings/grades" },
+        { label: "Employee Category", path: "/settings/employee-categories" },
       ],
     },
   ];

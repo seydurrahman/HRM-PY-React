@@ -65,6 +65,7 @@ import SubsectionEntry from "./pages/organization/SubsectionEntry.jsx";
 import FloorEntry from "./pages/organization/FloorEntry.jsx";
 import LineEntry from "./pages/organization/LineEntry.jsx";
 import TableEntry from "./pages/organization/TableEntry.jsx";
+import EmployeeCategory from "./pages/organization/EmployeeCategory.jsx";
 
 // Designation
 import DesignationEntry from "./pages/organization/DesignationEntry.jsx";
@@ -151,6 +152,10 @@ function App() {
         <Route path="/settings/floor" element={<FloorEntry />} />
         <Route path="/settings/line" element={<LineEntry />} />
         <Route path="/settings/table" element={<TableEntry />} />
+        <Route
+          path="/settings/employee-categories"
+          element={<EmployeeCategory />}
+        />
 
         {/* Designation */}
         <Route path="/settings/designations" element={<DesignationEntry />} />

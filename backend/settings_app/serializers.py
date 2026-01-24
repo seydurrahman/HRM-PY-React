@@ -16,6 +16,7 @@ from .models import (
     SalarySetting,
     PFSetting,
     OTSetting,
+    EmployeeCategory,
 )
 
 # Organization hierarchy
@@ -174,4 +175,10 @@ class PFSettingSerializer(serializers.ModelSerializer):
 class OTSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTSetting
+        fields = "__all__"
+
+
+class EmployeeCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeCategory
         fields = "__all__"

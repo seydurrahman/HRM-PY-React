@@ -19,6 +19,7 @@ from .models import (
     SalarySetting,
     PFSetting,
     OTSetting,
+    EmployeeCategory,
 )
 from .serializers import (
     CompanySerializer,
@@ -37,6 +38,7 @@ from .serializers import (
     SalarySettingSerializer,
     PFSettingSerializer,
     OTSettingSerializer,
+    EmployeeCategorySerializer,
 )
 
 
@@ -204,4 +206,9 @@ class PFSettingViewSet(viewsets.ModelViewSet):
 class OTSettingViewSet(viewsets.ModelViewSet):
     queryset = OTSetting.objects.all()
     serializer_class = OTSettingSerializer
+    permission_classes = [IsAuthenticated]
+
+class EmployeeCategoryViewSet(viewsets.ModelViewSet):
+    queryset = EmployeeCategory.objects.all()
+    serializer_class = EmployeeCategorySerializer
     permission_classes = [IsAuthenticated]
