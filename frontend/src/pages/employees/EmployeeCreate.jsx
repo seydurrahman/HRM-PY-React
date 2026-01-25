@@ -466,6 +466,58 @@ const EmployeeCreate = () => {
     loadBD(`/bd/unions/${form.upazila}/`, setBdEmpUnions);
   }, [form.upazila]);
 
+  // Handle Salary Policy Selection
+  useEffect(() => {
+    if (!form.salary_policy) {
+      // Reset salary fields if no policy selected
+      setForm((prev) => ({
+        ...prev,
+        gross_salary: null,
+        basic_salary: null,
+        house_rent: null,
+        medical_allowance: null,
+        mobile_allowance: null,
+        transport_allowance: null,
+        conveyance_allowance: null,
+        food_allowance: null,
+        other_allowance: null,
+      }));
+      return;
+    }
+
+    // Find the selected policy
+    const selectedPolicy = salaryPolicies.find(
+      (p) => p.id === parseInt(form.salary_policy),
+    );
+    if (!selectedPolicy) return;
+
+    const gross = Number(selectedPolicy.gross || 0);
+
+    // Calculate all components using the same logic as SalaryPolicy.jsx
+    const basicSalary = calculateFinalBasicFromPolicy(selectedPolicy);
+    const houseRent = calculateComponentAmount(selectedPolicy, "house_rent");
+    const medical = calculateComponentAmount(selectedPolicy, "medical");
+    const mobile = calculateComponentAmount(selectedPolicy, "mobile_allowance");
+    const transport = calculateComponentAmount(selectedPolicy, "transport");
+    const conveyance = calculateComponentAmount(selectedPolicy, "conveyance");
+    const food = calculateComponentAmount(selectedPolicy, "food");
+    const others = calculateComponentAmount(selectedPolicy, "others1");
+
+    // Update form with policy values
+    setForm((prev) => ({
+      ...prev,
+      gross_salary: gross,
+      basic_salary: basicSalary,
+      house_rent: houseRent,
+      medical_allowance: medical,
+      mobile_allowance: mobile,
+      transport_allowance: transport,
+      conveyance_allowance: conveyance,
+      food_allowance: food,
+      other_allowance: others,
+    }));
+  }, [form.salary_policy, salaryPolicies]);
+
   // get Id
   const getNameById = (list, id) => {
     if (!id || !Array.isArray(list) || list.length === 0) return "";
@@ -947,6 +999,174 @@ const EmployeeCreate = () => {
     }
   }, [params?.id]);
 
+  // Helper function to format field values for display
+  const getFieldValue = (value) => {
+    if (value === null || value === undefined) return "";
+    return value;
+  };
+
+  // Helper function to round to nearest whole number
+  const roundToNearest = (value) => {
+    return Math.round(Number(value) || 0);
+  };
+
+  // Calculate derived basic from policy (for use in allowance calculations)
+  const calculateDerivedBasicFromPolicy = (selectedPolicy) => {
+    const gross = Number(selectedPolicy.gross || 0);
+    const basicConfig =
+      typeof selectedPolicy.basic === "object"
+        ? selectedPolicy.basic
+        : { type: "percent", value: 0 };
+
+    if (basicConfig.type === "manual") {
+      return Number(basicConfig.value || 0);
+    }
+
+    if (basicConfig.type === "percent") {
+      return (gross * Number(basicConfig.value || 0)) / 100;
+    }
+
+    // Formula type: use iterative convergence
+    if (basicConfig.type === "formula") {
+      let derived = gross * 0.5;
+      const maxIterations = 20;
+      const tolerance = 0.01;
+
+      for (let i = 0; i < maxIterations; i++) {
+        let medical = 0;
+        if (selectedPolicy.medical) {
+          if (selectedPolicy.medical.type === "manual") {
+            medical = Number(selectedPolicy.medical.value || 0);
+          } else if (selectedPolicy.medical.type === "percent") {
+            const base =
+              selectedPolicy.medical.base === "basic" ? derived : gross;
+            medical = (base * Number(selectedPolicy.medical.value || 0)) / 100;
+          }
+        }
+
+        let mobile_allowance = 0;
+        if (selectedPolicy.mobile_allowance) {
+          if (selectedPolicy.mobile_allowance.type === "manual") {
+            mobile_allowance = Number(
+              selectedPolicy.mobile_allowance.value || 0,
+            );
+          } else if (selectedPolicy.mobile_allowance.type === "percent") {
+            const base =
+              selectedPolicy.mobile_allowance.base === "basic"
+                ? derived
+                : gross;
+            mobile_allowance =
+              (base * Number(selectedPolicy.mobile_allowance.value || 0)) / 100;
+          }
+        }
+
+        let food = 0;
+        if (selectedPolicy.food) {
+          if (selectedPolicy.food.type === "manual") {
+            food = Number(selectedPolicy.food.value || 0);
+          } else if (selectedPolicy.food.type === "percent") {
+            const base = selectedPolicy.food.base === "basic" ? derived : gross;
+            food = (base * Number(selectedPolicy.food.value || 0)) / 100;
+          }
+        }
+
+        let transport = 0;
+        if (selectedPolicy.transport) {
+          if (selectedPolicy.transport.type === "manual") {
+            transport = Number(selectedPolicy.transport.value || 0);
+          } else if (selectedPolicy.transport.type === "percent") {
+            const base =
+              selectedPolicy.transport.base === "basic" ? derived : gross;
+            transport =
+              (base * Number(selectedPolicy.transport.value || 0)) / 100;
+          }
+        }
+
+        let conveyance = 0;
+        if (selectedPolicy.conveyance) {
+          if (selectedPolicy.conveyance.type === "manual") {
+            conveyance = Number(selectedPolicy.conveyance.value || 0);
+          } else if (selectedPolicy.conveyance.type === "percent") {
+            const base =
+              selectedPolicy.conveyance.base === "basic" ? derived : gross;
+            conveyance =
+              (base * Number(selectedPolicy.conveyance.value || 0)) / 100;
+          }
+        }
+
+        const totalAllowances =
+          medical + mobile_allowance + food + transport + conveyance;
+        const m = Number(basicConfig.divided || 1);
+        const newDerived = (gross - totalAllowances) / m;
+
+        if (Math.abs(newDerived - derived) < tolerance) {
+          return newDerived > 0 ? newDerived : gross * 0.5;
+        }
+
+        derived = newDerived;
+      }
+
+      return derived > 0 ? derived : gross * 0.5;
+    }
+
+    return gross * 0.5;
+  };
+
+  // Calculate component amount from policy
+  const calculateComponentAmount = (selectedPolicy, componentKey) => {
+    const gross = Number(selectedPolicy.gross || 0);
+    const derivedBasic = calculateDerivedBasicFromPolicy(selectedPolicy);
+
+    const componentConfig = selectedPolicy[componentKey];
+    if (!componentConfig) return 0;
+
+    if (componentConfig.type === "manual") {
+      return roundToNearest(componentConfig.value || 0);
+    }
+
+    if (componentConfig.type === "percent") {
+      const base = componentConfig.base === "basic" ? derivedBasic : gross;
+      return roundToNearest((base * Number(componentConfig.value || 0)) / 100);
+    }
+
+    return 0;
+  };
+
+  // Calculate final basic salary
+  const calculateFinalBasicFromPolicy = (selectedPolicy) => {
+    const gross = Number(selectedPolicy.gross || 0);
+    const basicConfig =
+      typeof selectedPolicy.basic === "object"
+        ? selectedPolicy.basic
+        : { type: "percent", value: 0 };
+
+    if (basicConfig.type === "manual") {
+      return roundToNearest(basicConfig.value || 0);
+    }
+
+    if (basicConfig.type === "percent") {
+      return roundToNearest((gross * Number(basicConfig.value || 0)) / 100);
+    }
+
+    if (basicConfig.type === "formula") {
+      const medical = calculateComponentAmount(selectedPolicy, "medical");
+      const mobile = calculateComponentAmount(
+        selectedPolicy,
+        "mobile_allowance",
+      );
+      const food = calculateComponentAmount(selectedPolicy, "food");
+      const transport = calculateComponentAmount(selectedPolicy, "transport");
+      const conveyance = calculateComponentAmount(selectedPolicy, "conveyance");
+
+      const totalAllowances = medical + mobile + food + transport + conveyance;
+      const m = Number(basicConfig.divided || 1);
+      const result = (gross - totalAllowances) / m;
+      return roundToNearest(result > 0 ? result : 0);
+    }
+
+    return 0;
+  };
+
   // Handle input change
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -977,6 +1197,48 @@ const EmployeeCreate = () => {
     // Clear error for this field
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    // Handle Gross Salary changes - recalculate other fields
+    if (name === "gross_salary" && form.salary_policy) {
+      const selectedPolicy = salaryPolicies.find(
+        (p) => p.id === parseInt(form.salary_policy),
+      );
+      if (selectedPolicy) {
+        // Need to recalculate with new gross salary
+        // Create a modified policy object with the new gross salary
+        const modifiedPolicy = { ...selectedPolicy, gross: newValue };
+
+        const basicSalary = calculateFinalBasicFromPolicy(modifiedPolicy);
+        const houseRent = calculateComponentAmount(
+          modifiedPolicy,
+          "house_rent",
+        );
+        const medical = calculateComponentAmount(modifiedPolicy, "medical");
+        const mobile = calculateComponentAmount(
+          modifiedPolicy,
+          "mobile_allowance",
+        );
+        const transport = calculateComponentAmount(modifiedPolicy, "transport");
+        const conveyance = calculateComponentAmount(
+          modifiedPolicy,
+          "conveyance",
+        );
+        const food = calculateComponentAmount(modifiedPolicy, "food");
+        const others = calculateComponentAmount(modifiedPolicy, "others1");
+
+        setForm((prev) => ({
+          ...prev,
+          basic_salary: basicSalary,
+          house_rent: houseRent,
+          medical_allowance: medical,
+          mobile_allowance: mobile,
+          transport_allowance: transport,
+          conveyance_allowance: conveyance,
+          food_allowance: food,
+          other_allowance: others,
+        }));
+      }
     }
   };
 
@@ -3129,7 +3391,9 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="gross_salary"
-                  value={form.gross_salary}
+                  type="number"
+                  step="0.01"
+                  value={getFieldValue(form.gross_salary)}
                   onChange={handleChange}
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Gross Salary"
@@ -3143,9 +3407,12 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="basic_salary"
-                  value={form.basic_salary}
+                  value={getFieldValue(form.basic_salary)}
                   onChange={handleChange}
-                  className="border border-gray-300 p-2 rounded w-full"
+                  readOnly={form.salary_policy ? true : false}
+                  className={`border border-gray-300 p-2 rounded w-full ${
+                    form.salary_policy ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Basic Salary"
                 />
               </div>
@@ -3157,9 +3424,12 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="house_rent"
-                  value={form.house_rent}
+                  value={getFieldValue(form.house_rent)}
                   onChange={handleChange}
-                  className="border border-gray-300 p-2 rounded w-full"
+                  readOnly={form.salary_policy ? true : false}
+                  className={`border border-gray-300 p-2 rounded w-full ${
+                    form.salary_policy ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                   placeholder="House Rent"
                 />
               </div>
@@ -3171,9 +3441,12 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="medical_allowance"
-                  value={form.medical_allowance}
+                  value={getFieldValue(form.medical_allowance)}
                   onChange={handleChange}
-                  className="border border-gray-300 p-2 rounded w-full"
+                  readOnly={form.salary_policy ? true : false}
+                  className={`border border-gray-300 p-2 rounded w-full ${
+                    form.salary_policy ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Medical Allowance"
                 />
               </div>
@@ -3185,14 +3458,17 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="mobile_allowance"
-                  value={form.mobile_allowance}
+                  value={getFieldValue(form.mobile_allowance)}
                   onChange={handleChange}
-                  className="border border-gray-300 p-2 rounded w-full"
+                  readOnly={form.salary_policy ? true : false}
+                  className={`border border-gray-300 p-2 rounded w-full ${
+                    form.salary_policy ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Mobile Allowance"
                 />
               </div>
 
-              {/* food_allowance */}
+              {/* Food Allowance */}
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Food Allowance
@@ -3201,9 +3477,12 @@ const EmployeeCreate = () => {
                   name="food_allowance"
                   type="number"
                   step="0.01"
-                  className="border border-gray-300 p-2 rounded w-full"
+                  readOnly={form.salary_policy ? true : false}
+                  className={`border border-gray-300 p-2 rounded w-full ${
+                    form.salary_policy ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                   placeholder="0.00"
-                  value={form.food_allowance}
+                  value={getFieldValue(form.food_allowance)}
                   onChange={handleChange}
                 />
               </div>
@@ -3215,9 +3494,12 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="transport_allowance"
-                  value={form.transport_allowance}
+                  value={getFieldValue(form.transport_allowance)}
                   onChange={handleChange}
-                  className="border border-gray-300 p-2 rounded w-full"
+                  readOnly={form.salary_policy ? true : false}
+                  className={`border border-gray-300 p-2 rounded w-full ${
+                    form.salary_policy ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Transport Allowance"
                 />
               </div>
@@ -3229,9 +3511,12 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="conveyance_allowance"
-                  value={form.conveyance_allowance}
+                  value={getFieldValue(form.conveyance_allowance)}
                   onChange={handleChange}
-                  className="border border-gray-300 p-2 rounded w-full"
+                  readOnly={form.salary_policy ? true : false}
+                  className={`border border-gray-300 p-2 rounded w-full ${
+                    form.salary_policy ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Conveyance Allowance"
                 />
               </div>
@@ -3243,9 +3528,12 @@ const EmployeeCreate = () => {
                 </label>
                 <input
                   name="other_allowance"
-                  value={form.other_allowance}
+                  value={getFieldValue(form.other_allowance)}
                   onChange={handleChange}
-                  className="border border-gray-300 p-2 rounded w-full"
+                  readOnly={form.salary_policy ? true : false}
+                  className={`border border-gray-300 p-2 rounded w-full ${
+                    form.salary_policy ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Other Allowances"
                 />
               </div>

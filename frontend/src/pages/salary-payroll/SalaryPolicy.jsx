@@ -118,7 +118,8 @@ function SalaryPolicy() {
               ? (derived * Number(policy.conveyance.value || 0)) / 100
               : (gross * Number(policy.conveyance.value || 0)) / 100;
 
-        const totalAllowances = medical + mobile_allowance + food + transport + conveyance;
+        const totalAllowances =
+          medical + mobile_allowance + food + transport + conveyance;
 
         // Calculate new derived basic using formula
         const m = Number(policy.basic.divided || 1);
@@ -603,21 +604,19 @@ function SalaryPolicy() {
   /* ================= UI ================= */
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Salary Policy</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-xl font-semibold">Salary Policy</h1>
+        <button
+          onClick={handleCreate}
+          className="px-4 py-2 bg-black text-white rounded"
+        >
+          + Create New Policy
+        </button>
+      </div>
 
       {!isCreating ? (
         // LIST VIEW
         <div className="bg-white p-4 rounded-xl shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Salary Policies</h2>
-            <button
-              onClick={handleCreate}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              + Create New Policy
-            </button>
-          </div>
-
           {policies.length === 0 ? (
             <p className="text-gray-500 text-center py-6">
               No salary policies found. Create one to get started.
@@ -925,7 +924,7 @@ function SalaryPolicy() {
           <div className="text-right">
             <button
               onClick={handleSave}
-              className="px-4 py-2 bg-slate-900 text-white rounded mr-2 hover:bg-slate-800"
+              className="px-4 py-2 bg-green-600 text-white rounded mr-2 hover:bg-green-700"
             >
               {editingId ? "Update Policy" : "Save Policy"}
             </button>
