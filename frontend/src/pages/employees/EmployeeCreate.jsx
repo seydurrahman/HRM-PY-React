@@ -23,6 +23,7 @@ const EmployeeCreate = () => {
 
   const [designations, setDesignations] = useState([]);
   const [grades, setGrades] = useState([]);
+  const [salaryPolicies, setSalaryPolicies] = useState([]);
 
   const [employees, setEmployees] = useState([]);
 
@@ -307,6 +308,7 @@ const EmployeeCreate = () => {
   useEffect(() => {
     api.get("/settings/designations/").then((res) => setDesignations(res.data));
     api.get("/settings/grades/").then((res) => setGrades(res.data));
+    api.get("/salary-policies/").then((res) => setSalaryPolicies(res.data));
   }, []);
 
   // Fetch organization units-table
@@ -633,141 +635,145 @@ const EmployeeCreate = () => {
   }, [bdEmpUnions]);
 
   useEffect(() => {
-  if (!params?.id) return;
-  setIsEdit(true);
+    if (!params?.id) return;
+    setIsEdit(true);
 
-  api.get(`/employees/${params.id}/`)
-    .then((res) => {
-      const data = res.data;
+    api
+      .get(`/employees/${params.id}/`)
+      .then((res) => {
+        const data = res.data;
 
-      /* 🔹 Fix backend inconsistent field names */
-      if (
-        !Object.prototype.hasOwnProperty.call(data, "leave_effective") &&
-        Object.prototype.hasOwnProperty.call(data, "Leave_effective")
-      ) {
-        data.leave_effective = data.Leave_effective;
-      }
-
-      if (!Object.prototype.hasOwnProperty.call(data, "other_deduction")) {
-        if (Object.prototype.hasOwnProperty.call(data, "other_deductions")) {
-          data.other_deduction = data.other_deductions;
+        /* 🔹 Fix backend inconsistent field names */
+        if (
+          !Object.prototype.hasOwnProperty.call(data, "leave_effective") &&
+          Object.prototype.hasOwnProperty.call(data, "Leave_effective")
+        ) {
+          data.leave_effective = data.Leave_effective;
         }
-      }
 
-      const normalizeValue = (val) => {
-        if (val === null || val === undefined) return "";
-        if (typeof val === "object" && !Array.isArray(val)) {
-          if ("id" in val) return val.id;
+        if (!Object.prototype.hasOwnProperty.call(data, "other_deduction")) {
+          if (Object.prototype.hasOwnProperty.call(data, "other_deductions")) {
+            data.other_deduction = data.other_deductions;
+          }
+        }
+
+        const normalizeValue = (val) => {
+          if (val === null || val === undefined) return "";
+          if (typeof val === "object" && !Array.isArray(val)) {
+            if ("id" in val) return val.id;
+            return val;
+          }
+          if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
+            return val.split("T")[0];
+          }
+          if (typeof val === "string") {
+            const low = val.trim().toLowerCase();
+            if (low === "true" || low === "yes") return true;
+            if (low === "false" || low === "no") return false;
+
+            const listMatch = val
+              .trim()
+              .match(/^\[\s*['"]?([^'"\]]+)['"]?\s*\]$/);
+            if (listMatch) return listMatch[1];
+          }
           return val;
-        }
-        if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
-          return val.split("T")[0];
-        }
-        if (typeof val === "string") {
-          const low = val.trim().toLowerCase();
-          if (low === "true" || low === "yes") return true;
-          if (low === "false" || low === "no") return false;
+        };
 
-          const listMatch = val
-            .trim()
-            .match(/^\[\s*['"]?([^'"\]]+)['"]?\s*\]$/);
-          if (listMatch) return listMatch[1];
-        }
-        return val;
-      };
+        /* 🔹 Build form object only once */
+        const newForm = { ...form };
 
-      /* 🔹 Build form object only once */
-      const newForm = { ...form };
+        Object.keys(newForm).forEach((key) => {
+          if (Object.prototype.hasOwnProperty.call(data, key)) {
+            newForm[key] = normalizeValue(data[key]);
+          }
+        });
 
-      Object.keys(newForm).forEach((key) => {
-        if (Object.prototype.hasOwnProperty.call(data, key)) {
-          newForm[key] = normalizeValue(data[key]);
-        }
-      });
+        /* 🔹 Store existing uploaded files as URLs */
+        newForm.emp_image_docs_url = data.emp_image_docs || "";
+        newForm.emp_id_docs_url = data.emp_id_docs || "";
+        newForm.emp_birthcertificate_docs_url =
+          data.emp_birthcertificate_docs || "";
+        newForm.nominee_id_docs_url = data.nominee_id_docs || "";
+        newForm.job_exp_certificate_docs_url =
+          data.job_exp_certificate_docs || "";
+        newForm.education_certificate_docs_url =
+          data.education_certificate_docs || "";
+        newForm.training_certificate_docs_url =
+          data.training_certificate_docs || "";
 
-      /* 🔹 Store existing uploaded files as URLs */
-      newForm.emp_image_docs_url = data.emp_image_docs || "";
-      newForm.emp_id_docs_url = data.emp_id_docs || "";
-      newForm.emp_birthcertificate_docs_url = data.emp_birthcertificate_docs || "";
-      newForm.nominee_id_docs_url = data.nominee_id_docs || "";
-      newForm.job_exp_certificate_docs_url = data.job_exp_certificate_docs || "";
-      newForm.education_certificate_docs_url = data.education_certificate_docs || "";
-      newForm.training_certificate_docs_url = data.training_certificate_docs || "";
+        /* 🔹 Clear file inputs (browser rule) */
+        newForm.emp_image_docs = null;
+        newForm.emp_id_docs = null;
+        newForm.emp_birthcertificate_docs = null;
+        newForm.nominee_id_docs = null;
+        newForm.job_exp_certificate_docs = null;
+        newForm.education_certificate_docs = null;
+        newForm.training_certificate_docs = null;
 
-      /* 🔹 Clear file inputs (browser rule) */
-      newForm.emp_image_docs = null;
-      newForm.emp_id_docs = null;
-      newForm.emp_birthcertificate_docs = null;
-      newForm.nominee_id_docs = null;
-      newForm.job_exp_certificate_docs = null;
-      newForm.education_certificate_docs = null;
-      newForm.training_certificate_docs = null;
+        /* 🔹 Set form only ONCE */
+        setForm(newForm);
+        setOriginalCode(data.code);
 
-      /* 🔹 Set form only ONCE */
-      setForm(newForm);
-      setOriginalCode(data.code);
-
-      /* 🔹 Arrays */
-      setJobExperiences(
-        data.job_experiences?.length
-          ? data.job_experiences
-          : [
-              {
-                job_company_name: "",
-                job_department: "",
-                job_designation: "",
-                job_start_date: "",
-                job_end_date: "",
-                leave_reason: "",
-              },
-            ]
-      );
-
-      setEducations(
-        data.educations?.length
-          ? data.educations
-          : [
-              {
-                degree_title: "",
-                major_subject: "",
-                institute_name: "",
-                passing_year: "",
-                education_board: "",
-                result: "",
-              },
-            ]
-      );
-
-      setTraining(
-        data.trainings?.length
-          ? data.trainings
-          : [
-              {
-                training_name: "",
-                training_institute: "",
-                institute_address: "",
-                training_duration: "",
-                training_result: "",
-                remarks: "",
-              },
-            ]
-      );
-
-      /* 🔹 Other documents */
-      if (data.other_documents) {
-        setOtherDocs(
-          data.other_documents.map((d) => ({
-            title: d.title || "",
-            file: null,
-            id: d.id,
-            url: d.file,
-          }))
+        /* 🔹 Arrays */
+        setJobExperiences(
+          data.job_experiences?.length
+            ? data.job_experiences
+            : [
+                {
+                  job_company_name: "",
+                  job_department: "",
+                  job_designation: "",
+                  job_start_date: "",
+                  job_end_date: "",
+                  leave_reason: "",
+                },
+              ],
         );
-      }
-    })
-    .catch((err) => console.error("Employee load error:", err));
-}, [params?.id]);
 
+        setEducations(
+          data.educations?.length
+            ? data.educations
+            : [
+                {
+                  degree_title: "",
+                  major_subject: "",
+                  institute_name: "",
+                  passing_year: "",
+                  education_board: "",
+                  result: "",
+                },
+              ],
+        );
+
+        setTraining(
+          data.trainings?.length
+            ? data.trainings
+            : [
+                {
+                  training_name: "",
+                  training_institute: "",
+                  institute_address: "",
+                  training_duration: "",
+                  training_result: "",
+                  remarks: "",
+                },
+              ],
+        );
+
+        /* 🔹 Other documents */
+        if (data.other_documents) {
+          setOtherDocs(
+            data.other_documents.map((d) => ({
+              title: d.title || "",
+              file: null,
+              id: d.id,
+              url: d.file,
+            })),
+          );
+        }
+      })
+      .catch((err) => console.error("Employee load error:", err));
+  }, [params?.id]);
 
   // Add/Remove Job Experience Entries
   const addJobExperience = () => {
@@ -1134,6 +1140,7 @@ const EmployeeCreate = () => {
         "basic_salary",
         "house_rent",
         "medical_allowance",
+        "food_allowance",
         "mobile_allowance",
         "transport_allowance",
         "conveyance_allowance",
@@ -2961,22 +2968,6 @@ const EmployeeCreate = () => {
                 </select>
               </div>
 
-              {/* food_allowance */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Food Allowance
-                </label>
-                <input
-                  name="food_allowance"
-                  type="number"
-                  step="0.01"
-                  className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="0.00"
-                  value={form.food_allowance}
-                  onChange={handleChange}
-                />
-              </div>
-
               {/* bank_name */}
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -3082,13 +3073,19 @@ const EmployeeCreate = () => {
                 <label className="block text-sm font-medium mb-1">
                   Salary Policy
                 </label>
-                <input
+                <select
                   name="salary_policy"
                   value={form.salary_policy}
                   onChange={handleChange}
                   className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Salary Policy"
-                />
+                >
+                  <option value="">Select Salary Policy</option>
+                  {salaryPolicies.map((policy) => (
+                    <option key={policy.id} value={policy.id}>
+                      {policy.employee_type_name}
+                    </option>
+                  ))}
+                </select>
               </div>
               {/* PF applicable */}
               <div>
@@ -3192,6 +3189,22 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                   className="border border-gray-300 p-2 rounded w-full"
                   placeholder="Mobile Allowance"
+                />
+              </div>
+
+              {/* food_allowance */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Food Allowance
+                </label>
+                <input
+                  name="food_allowance"
+                  type="number"
+                  step="0.01"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="0.00"
+                  value={form.food_allowance}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -3795,54 +3808,54 @@ const EmployeeCreate = () => {
                 />
               </div>
               {/* Employee Image */}
-<div>
-  <label className="block text-sm font-medium mb-1">
-    Image (JPG, JPEG, PNG)
-  </label>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Image (JPG, JPEG, PNG)
+                </label>
 
-  <input
-    type="file"
-    name="emp_image_docs"
-    accept=".jpg,.jpeg,.png"
-    className="border border-gray-300 p-2 rounded w-full"
-    onChange={handleFileChange}
-  />
+                <input
+                  type="file"
+                  name="emp_image_docs"
+                  accept=".jpg,.jpeg,.png"
+                  className="border border-gray-300 p-2 rounded w-full"
+                  onChange={handleFileChange}
+                />
 
-  {/* New file selected */}
-  {form.emp_image_docs && (
-    <p className="text-xs text-green-600 mt-1">
-      ✓ File selected: {form.emp_image_docs.name}
-    </p>
-  )}
+                {/* New file selected */}
+                {form.emp_image_docs && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ File selected: {form.emp_image_docs.name}
+                  </p>
+                )}
 
-  {/* Existing file */}
-  {form.emp_image_docs_url && (
-    <div className="flex gap-2 items-center mt-1">
-      <a
-        href={form.emp_image_docs_url}
-        target="_blank"
-        rel="noreferrer"
-        className="text-blue-600 text-sm underline"
-      >
-        View current
-      </a>
+                {/* Existing file */}
+                {form.emp_image_docs_url && (
+                  <div className="flex gap-2 items-center mt-1">
+                    <a
+                      href={form.emp_image_docs_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 text-sm underline"
+                    >
+                      View current
+                    </a>
 
-      <button
-        type="button"
-        className="text-red-600 text-xs"
-        onClick={() =>
-          setForm((p) => ({
-            ...p,
-            emp_image_docs_url: "",
-            emp_image_docs: null,
-          }))
-        }
-      >
-        ❌ Remove
-      </button>
-    </div>
-  )}
-</div>
+                    <button
+                      type="button"
+                      className="text-red-600 text-xs"
+                      onClick={() =>
+                        setForm((p) => ({
+                          ...p,
+                          emp_image_docs_url: "",
+                          emp_image_docs: null,
+                        }))
+                      }
+                    >
+                      ❌ Remove
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Employee NID */}
               <div>

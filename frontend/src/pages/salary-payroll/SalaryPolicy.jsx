@@ -16,10 +16,11 @@ function SalaryPolicy() {
     },
     house_rent: { type: "percent", base: "gross", value: "" },
     medical: { type: "percent", base: "gross", value: "" },
+    mobile_allowance: { type: "percent", base: "gross", value: "" },
     food: { type: "percent", base: "gross", value: "" },
     transport: { type: "percent", base: "gross", value: "" },
+    conveyance: { type: "percent", base: "gross", value: "" },
     others1: { type: "percent", base: "gross", value: "" },
-    others2: { type: "percent", base: "gross", value: "" },
   });
 
   const [errors, setErrors] = useState({});
@@ -89,6 +90,13 @@ function SalaryPolicy() {
               ? (derived * Number(policy.medical.value || 0)) / 100
               : (gross * Number(policy.medical.value || 0)) / 100;
 
+        const mobile_allowance =
+          policy.mobile_allowance.type === "manual"
+            ? Number(policy.mobile_allowance.value || 0)
+            : policy.mobile_allowance.base === "basic"
+              ? (derived * Number(policy.mobile_allowance.value || 0)) / 100
+              : (gross * Number(policy.mobile_allowance.value || 0)) / 100;
+
         const food =
           policy.food.type === "manual"
             ? Number(policy.food.value || 0)
@@ -103,7 +111,14 @@ function SalaryPolicy() {
               ? (derived * Number(policy.transport.value || 0)) / 100
               : (gross * Number(policy.transport.value || 0)) / 100;
 
-        const totalAllowances = medical + food + transport;
+        const conveyance =
+          policy.conveyance.type === "manual"
+            ? Number(policy.conveyance.value || 0)
+            : policy.conveyance.base === "basic"
+              ? (derived * Number(policy.conveyance.value || 0)) / 100
+              : (gross * Number(policy.conveyance.value || 0)) / 100;
+
+        const totalAllowances = medical + mobile_allowance + food + transport + conveyance;
 
         // Calculate new derived basic using formula
         const m = Number(policy.basic.divided || 1);
@@ -140,8 +155,10 @@ function SalaryPolicy() {
   const getTotalAllowances = () => {
     return (
       calculateAmount(policy.medical) +
+      calculateAmount(policy.mobile_allowance) +
       calculateAmount(policy.food) +
-      calculateAmount(policy.transport)
+      calculateAmount(policy.transport) +
+      calculateAmount(policy.conveyance)
     );
   };
 
@@ -151,8 +168,10 @@ function SalaryPolicy() {
       calculateBasic() +
       calculateAmount(policy.house_rent) +
       calculateAmount(policy.medical) +
+      calculateAmount(policy.mobile_allowance) +
       calculateAmount(policy.food) +
-      calculateAmount(policy.transport)
+      calculateAmount(policy.transport) +
+      calculateAmount(policy.conveyance)
     );
   };
 
@@ -290,10 +309,11 @@ function SalaryPolicy() {
         basic: policy.basic,
         house_rent: policy.house_rent,
         medical: policy.medical,
+        mobile_allowance: policy.mobile_allowance,
         food: policy.food,
         transport: policy.transport,
+        conveyance: policy.conveyance,
         others1: policy.others1,
-        others2: policy.others2,
       };
 
       if (editingId) {
@@ -340,10 +360,11 @@ function SalaryPolicy() {
       },
       house_rent: { type: "percent", base: "gross", value: "" },
       medical: { type: "percent", base: "gross", value: "" },
+      mobile_allowance: { type: "percent", base: "gross", value: "" },
       food: { type: "percent", base: "gross", value: "" },
       transport: { type: "percent", base: "gross", value: "" },
+      conveyance: { type: "percent", base: "gross", value: "" },
       others1: { type: "percent", base: "gross", value: "" },
-      others2: { type: "percent", base: "gross", value: "" },
     });
     setErrors({});
   };
@@ -415,6 +436,17 @@ function SalaryPolicy() {
           }
         }
 
+        let mobile_allowance = 0;
+        if (policyData.mobile_allowance) {
+          if (policyData.mobile_allowance.type === "manual") {
+            mobile_allowance = Number(policyData.mobile_allowance.value || 0);
+          } else if (policyData.mobile_allowance.type === "percent") {
+            const base =
+              policyData.mobile_allowance.base === "basic" ? derived : gross;
+            mobile_allowance =
+              (base * Number(policyData.mobile_allowance.value || 0)) / 100;
+          }
+        }
         let food = 0;
         if (policyData.food) {
           if (policyData.food.type === "manual") {
@@ -436,7 +468,20 @@ function SalaryPolicy() {
           }
         }
 
-        const totalAllowances = medical + food + transport;
+        let conveyance = 0;
+        if (policyData.conveyance) {
+          if (policyData.conveyance.type === "manual") {
+            conveyance = Number(policyData.conveyance.value || 0);
+          } else if (policyData.conveyance.type === "percent") {
+            const base =
+              policyData.conveyance.base === "basic" ? derived : gross;
+            conveyance =
+              (base * Number(policyData.conveyance.value || 0)) / 100;
+          }
+        }
+
+        const totalAllowances =
+          medical + mobile_allowance + transport + food + conveyance;
 
         // Calculate new derived basic using formula
         const m = Number(basicConfig.divided || 1);
@@ -509,7 +554,19 @@ function SalaryPolicy() {
         }
       }
 
-      const totalAllowances = medical + food + transport;
+      let conveyance = 0;
+      if (policyData.conveyance) {
+        if (policyData.conveyance.type === "manual") {
+          conveyance = Number(policyData.conveyance.value || 0);
+        } else if (policyData.conveyance.type === "percent") {
+          const derivedBasic = calculateDerivedBasicFromPolicy(policyData);
+          const base =
+            policyData.conveyance.base === "basic" ? derivedBasic : gross;
+          conveyance = (base * Number(policyData.conveyance.value || 0)) / 100;
+        }
+      }
+
+      const totalAllowances = medical + food + transport + conveyance;
 
       // Final Basic = (Gross - TotalAllowances) / Divided
       const m = Number(basicConfig.divided || 1);
@@ -575,8 +632,10 @@ function SalaryPolicy() {
                     <th className="border p-2 text-right">Basic</th>
                     <th className="border p-2 text-right">House Rent</th>
                     <th className="border p-2 text-right">Medical</th>
+                    <th className="border p-2 text-right">Mobile</th>
                     <th className="border p-2 text-right">Food</th>
                     <th className="border p-2 text-right">Transport</th>
+                    <th className="border p-2 text-right">Conveyance</th>
                     <th className="border p-2 text-right">Others1</th>
                     <th className="border p-2 text-center">Actions</th>
                   </tr>
@@ -601,10 +660,19 @@ function SalaryPolicy() {
                         {calculateComponentFromPolicy(policyItem, "medical")}
                       </td>
                       <td className="border p-2 text-right">
+                        {calculateComponentFromPolicy(
+                          policyItem,
+                          "mobile_allowance",
+                        )}
+                      </td>
+                      <td className="border p-2 text-right">
                         {calculateComponentFromPolicy(policyItem, "food")}
                       </td>
                       <td className="border p-2 text-right">
                         {calculateComponentFromPolicy(policyItem, "transport")}
+                      </td>
+                      <td className="border p-2 text-right">
+                        {calculateComponentFromPolicy(policyItem, "conveyance")}
                       </td>
                       <td className="border p-2 text-right">
                         {calculateComponentFromPolicy(policyItem, "others1")}
@@ -632,7 +700,7 @@ function SalaryPolicy() {
         </div>
       ) : (
         // FORM VIEW
-        <div className="bg-white p-4 rounded-xl shadow-sm space-y-6">
+        <div className="bg-white p-4 rounded-xl shadow-sm space-y-2">
           {/* Employee Type */}
           <div>
             <label className="text-sm font-medium">
@@ -754,7 +822,7 @@ function SalaryPolicy() {
             )}
 
             <div className="font-semibold text-green-700">
-              Final Basic = {calculateBasic().toFixed(2)}
+              Basic Salary = {calculateBasic().toFixed(2)}
             </div>
 
             <div className="text-xs text-gray-600">
@@ -780,7 +848,7 @@ function SalaryPolicy() {
           />
 
           <AllowanceBlock
-            title="Medical"
+            title="Medical Allowance"
             item={policy.medical}
             showBase
             setItem={(val) => setPolicy({ ...policy, medical: val })}
@@ -790,17 +858,17 @@ function SalaryPolicy() {
           />
 
           <AllowanceBlock
-            title="Transport"
-            item={policy.transport}
+            title="Mobile Allowance"
+            item={policy.mobile_allowance}
             showBase
-            setItem={(val) => setPolicy({ ...policy, transport: val })}
+            setItem={(val) => setPolicy({ ...policy, mobile_allowance: val })}
             validateValue={validateValue}
             calculateAmount={calculateAmount}
             fieldError={null}
           />
 
           <AllowanceBlock
-            title="Food"
+            title="Food Allowance"
             item={policy.food}
             showBase
             setItem={(val) => setPolicy({ ...policy, food: val })}
@@ -810,7 +878,27 @@ function SalaryPolicy() {
           />
 
           <AllowanceBlock
-            title="Others1"
+            title="Transport Allowance"
+            item={policy.transport}
+            showBase
+            setItem={(val) => setPolicy({ ...policy, transport: val })}
+            validateValue={validateValue}
+            calculateAmount={calculateAmount}
+            fieldError={null}
+          />
+
+          <AllowanceBlock
+            title="Conveyance Allowance"
+            item={policy.conveyance}
+            showBase
+            setItem={(val) => setPolicy({ ...policy, conveyance: val })}
+            validateValue={validateValue}
+            calculateAmount={calculateAmount}
+            fieldError={null}
+          />
+
+          <AllowanceBlock
+            title="Others Allowances"
             item={policy.others1}
             showBase={false}
             setItem={(val) => setPolicy({ ...policy, others1: val })}
@@ -826,8 +914,8 @@ function SalaryPolicy() {
           />
 
           <div className="text-right font-semibold text-blue-700">
-            Total (Basic + HR + Medical + Food + Transport) ={" "}
-            {getGrandTotal().toFixed(2)}
+            Total (Basic + HR + Medical + Mobile + Food + Transport + Conveyance
+            ) = {getGrandTotal().toFixed(2)}
           </div>
 
           <div className="text-right font-semibold text-purple-700">

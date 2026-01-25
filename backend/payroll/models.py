@@ -9,8 +9,10 @@ class SalaryPolicy(models.Model):
     basic = models.JSONField(default=dict)
     house_rent = models.JSONField(default=dict)
     medical = models.JSONField(default=dict)
-    food = models.JSONField(default=dict)
+    mobile_allowance = models.JSONField(default=dict)
     transport = models.JSONField(default=dict)
+    conveyance_allowance = models.JSONField(default=dict)
+    food = models.JSONField(default=dict)
     others1 = models.JSONField(default=dict)
     others2 = models.JSONField(default=dict)
 
