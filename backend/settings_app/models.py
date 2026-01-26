@@ -163,10 +163,15 @@ class PFSetting(models.Model):
     
 
 class OTEligibilitySetting(models.Model):
-   employee_category = models.ForeignKey(EmployeeCategory, on_delete=models.CASCADE)
-   designation = models.ForeignKey(Designation, on_delete=models.CASCADE)
-   is_eligible = models.BooleanField(default=True)
-   class Meta:
+    employee_category = models.ForeignKey("EmployeeCategory", on_delete=models.CASCADE)
+    designation = models.ForeignKey("Designation", on_delete=models.CASCADE)
+    is_eligible = models.BooleanField(default=True)
+    working_days = models.PositiveIntegerField(null=True, blank=True)
+    working_hours = models.PositiveIntegerField(null=True, blank=True)
+    ot_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+
+    class Meta:
         unique_together = ("employee_category", "designation")
-   def __str__(self):
+
+    def __str__(self):
         return f"OT Eligibility for {self.designation.name} in {self.employee_category.name}: {'Eligible' if self.is_eligible else 'Not Eligible'}"
