@@ -127,7 +127,7 @@ const Sidebar = () => {
     },
 
     {
-      label: "Organization Entry",
+      label: "Organization Settings",
       roles: ["Admin", "HR","admin","hr"],
       children: [
         { label: "Company", path: "/settings/company" },
@@ -141,9 +141,18 @@ const Sidebar = () => {
         { label: "Table", path: "/settings/table" },
         { label: "Designation", path: "/settings/designations" },
         { label: "Grade", path: "/settings/grades" },
-        { label: "Employee Category", path: "/settings/employee-categories" },
       ],
     },
+
+    {
+      label: "Other Settings",
+      roles: ["Admin", "HR","admin","hr"],
+      children: [
+        { label: "Employee Category", path: "/settings/employee-categories" },
+        { label: "OT Eligibility", path: "/settings/ot-eligibility" },
+      ],
+    },
+
   ];
 
   const toggleMenu = (label) => {

@@ -18,11 +18,12 @@ from .models import (
     Bank,
     SalarySetting,
     PFSetting,
-    OTSetting,
     EmployeeCategory,
+    OTEligibilitySetting,
 )
 from .serializers import (
     CompanySerializer,
+    OTEligibilitySettingSerializer,
     UnitSerializer,
     DivisionSerializer,
     DepartmentSerializer,
@@ -37,7 +38,7 @@ from .serializers import (
     BankSerializer,
     SalarySettingSerializer,
     PFSettingSerializer,
-    OTSettingSerializer,
+    OTEligibilitySettingSerializer,
     EmployeeCategorySerializer,
 )
 
@@ -203,12 +204,13 @@ class PFSettingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class OTSettingViewSet(viewsets.ModelViewSet):
-    queryset = OTSetting.objects.all()
-    serializer_class = OTSettingSerializer
-    permission_classes = [IsAuthenticated]
-
 class EmployeeCategoryViewSet(viewsets.ModelViewSet):
     queryset = EmployeeCategory.objects.all()
     serializer_class = EmployeeCategorySerializer
+    permission_classes = [IsAuthenticated]
+
+
+class OTEligibilitySettingViewSet(viewsets.ModelViewSet):
+    queryset = OTEligibilitySetting.objects.all()
+    serializer_class = OTEligibilitySettingSerializer
     permission_classes = [IsAuthenticated]

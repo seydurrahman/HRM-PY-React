@@ -112,10 +112,17 @@ class Grade(models.Model):
     def __str__(self):
         return self.name
 
+class EmployeeCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
 
 class Designation(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True, blank=True)
+    employee_category = models.ForeignKey(EmployeeCategory, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -153,18 +160,13 @@ class PFSetting(models.Model):
     is_active = models.BooleanField(default=True)
     employee_percent = models.DecimalField(max_digits=5, decimal_places=2)  # e.g. 8.00
     employer_percent = models.DecimalField(max_digits=5, decimal_places=2)
-
-
-class OTSetting(models.Model):
-    is_active = models.BooleanField(default=True)
-    rate_multiplier = models.DecimalField(max_digits=5, decimal_places=2, default=1.5)
-
-class EmployeeCategory(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.name
     
 
-
+class OTEligibilitySetting(models.Model):
+   employee_category = models.ForeignKey(EmployeeCategory, on_delete=models.CASCADE)
+   designation = models.ForeignKey(Designation, on_delete=models.CASCADE)
+   is_eligible = models.BooleanField(default=True)
+   class Meta:
+        unique_together = ("employee_category", "designation")
+   def __str__(self):
+        return f"OT Eligibility for {self.designation.name} in {self.employee_category.name}: {'Eligible' if self.is_eligible else 'Not Eligible'}"

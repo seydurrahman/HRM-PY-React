@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Company,
+    OTEligibilitySetting,
     Unit,
     Division,
     Department,
@@ -15,7 +16,6 @@ from .models import (
     Bank,
     SalarySetting,
     PFSetting,
-    OTSetting,
     EmployeeCategory,
 )
 
@@ -172,13 +172,12 @@ class PFSettingSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class OTSettingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OTSetting
-        fields = "__all__"
-
-
 class EmployeeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeCategory
+        fields = "__all__"
+
+class OTEligibilitySettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OTEligibilitySetting
         fields = "__all__"

@@ -65,7 +65,10 @@ import SubsectionEntry from "./pages/organization/SubsectionEntry.jsx";
 import FloorEntry from "./pages/organization/FloorEntry.jsx";
 import LineEntry from "./pages/organization/LineEntry.jsx";
 import TableEntry from "./pages/organization/TableEntry.jsx";
-import EmployeeCategory from "./pages/organization/EmployeeCategory.jsx";
+import EmployeeCategory from "./pages/other-settings/EmployeeCategory.jsx";
+
+// Other Settings
+import OT_Eligibility from "./pages/other-settings/OT_Eligibility.jsx";
 
 // Designation
 import DesignationEntry from "./pages/organization/DesignationEntry.jsx";
@@ -155,6 +158,11 @@ function App() {
         <Route
           path="/settings/employee-categories"
           element={<EmployeeCategory />}
+        />
+        {/* Other Settings */}
+        <Route
+          path="/settings/ot-eligibility"
+          element={<OT_Eligibility />}
         />
 
         {/* Designation */}

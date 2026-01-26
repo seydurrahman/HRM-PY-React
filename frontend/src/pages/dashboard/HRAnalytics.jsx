@@ -18,7 +18,8 @@ const HRAnalytics = () => {
   const COLORS = ["#1e293b", "#64748b", "#0f172a", "#334155"];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Analytics Dashboard</h1>
 
       {/* ---- TOP KPI CARDS ---- */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
