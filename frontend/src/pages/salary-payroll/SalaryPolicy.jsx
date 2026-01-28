@@ -377,7 +377,60 @@ function SalaryPolicy() {
   };
 
   const handleEdit = (policyData) => {
-    setPolicy(policyData);
+    // Parse policy data from backend (convert JSON strings to objects if needed)
+    const parsedPolicy = {
+      employee_type: policyData.employee_type || "",
+      gross: policyData.gross || "",
+      basic:
+        typeof policyData.basic === "string"
+          ? JSON.parse(policyData.basic)
+          : policyData.basic || { type: "percent", value: "", divided: 1.5 },
+      house_rent:
+        typeof policyData.house_rent === "string"
+          ? JSON.parse(policyData.house_rent)
+          : policyData.house_rent || {
+              type: "percent",
+              base: "gross",
+              value: "",
+            },
+      medical:
+        typeof policyData.medical === "string"
+          ? JSON.parse(policyData.medical)
+          : policyData.medical || { type: "percent", base: "gross", value: "" },
+      mobile_allowance:
+        typeof policyData.mobile_allowance === "string"
+          ? JSON.parse(policyData.mobile_allowance)
+          : policyData.mobile_allowance || {
+              type: "percent",
+              base: "gross",
+              value: "",
+            },
+      food:
+        typeof policyData.food === "string"
+          ? JSON.parse(policyData.food)
+          : policyData.food || { type: "percent", base: "gross", value: "" },
+      transport:
+        typeof policyData.transport === "string"
+          ? JSON.parse(policyData.transport)
+          : policyData.transport || {
+              type: "percent",
+              base: "gross",
+              value: "",
+            },
+      conveyance:
+        typeof policyData.conveyance === "string"
+          ? JSON.parse(policyData.conveyance)
+          : policyData.conveyance || {
+              type: "percent",
+              base: "gross",
+              value: "",
+            },
+      others1:
+        typeof policyData.others1 === "string"
+          ? JSON.parse(policyData.others1)
+          : policyData.others1 || { type: "percent", base: "gross", value: "" },
+    };
+    setPolicy(parsedPolicy);
     setEditingId(policyData.id);
     setIsCreating(true);
   };

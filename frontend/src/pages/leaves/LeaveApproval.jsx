@@ -76,6 +76,34 @@ const LeaveApproval = () => {
     <div>
       <h1 className="text-xl font-semibold">Leave Approval</h1>
 
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+        <div className="bg-white p-2 rounded-lg shadow-md text-center">
+          <div className="text-3xl font-bold text-gray-800">
+            {leaves.length}
+          </div>
+          <div className="text-gray-600 text-sm">Total Applications</div>
+        </div>
+        <div className="bg-white p-2 rounded-lg shadow-md text-center">
+          <div className="text-3xl font-bold text-yellow-600">
+            {leaves.filter((l) => l.status === "P").length}
+          </div>
+          <div className="text-gray-600 text-sm">Pending</div>
+        </div>
+        <div className="bg-white p-2 rounded-lg shadow-md text-center">
+          <div className="text-3xl font-bold text-green-600">
+            {leaves.filter((l) => l.status === "A").length}
+          </div>
+          <div className="text-gray-600 text-sm">Approved</div>
+        </div>
+        <div className="bg-white p-2 rounded-lg shadow-md text-center">
+          <div className="text-3xl font-bold text-red-600">
+            {leaves.filter((l) => l.status === "R").length}
+          </div>
+          <div className="text-gray-600 text-sm">Rejected</div>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="bg-white p-6 rounded-lg shadow-md space-y-4 mt-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -191,33 +219,7 @@ const LeaveApproval = () => {
         )}
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-        <div className="bg-white p-6 rounded-lg shadow-md text-center">
-          <div className="text-3xl font-bold text-gray-800">
-            {leaves.length}
-          </div>
-          <div className="text-gray-600 text-sm">Total Applications</div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md text-center">
-          <div className="text-3xl font-bold text-yellow-600">
-            {leaves.filter((l) => l.status === "P").length}
-          </div>
-          <div className="text-gray-600 text-sm">Pending</div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md text-center">
-          <div className="text-3xl font-bold text-green-600">
-            {leaves.filter((l) => l.status === "A").length}
-          </div>
-          <div className="text-gray-600 text-sm">Approved</div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md text-center">
-          <div className="text-3xl font-bold text-red-600">
-            {leaves.filter((l) => l.status === "R").length}
-          </div>
-          <div className="text-gray-600 text-sm">Rejected</div>
-        </div>
-      </div>
+      
     </div>
   );
 };
