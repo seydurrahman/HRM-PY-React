@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../lib/api";
 
 const ApplyLeave = () => {
+  const navigate = useNavigate();
   const [types, setTypes] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [form, setForm] = useState({
     employee: "",
     leave_type: "",
+    application_for: "",
     start_date: "",
     end_date: "",
     rejoin_date: "",
@@ -16,7 +19,20 @@ const ApplyLeave = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [leaveSettings, setLeaveSettings] = useState([]);
   const [employeeLeaveBalance, setEmployeeLeaveBalance] = useState(null);
+  const [appliedLeaves, setAppliedLeaves] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Dropdown Leaves Types
+  const leaveTypes = [
+    { id: 1, name: "Casual Leave" },
+    { id: 2, name: "Sick Leave" },
+    { id: 3, name: "Earned Leave" },
+    { id: 4, name: "Maternity Leave" },
+    { id: 5, name: "Paternity Leave" },
+    { id: 6, name: "Funeral Leave" },
+    { id: 7, name: "Compensatory Leave" },
+    { id: 8, name: "Unpaid Leave" },
+  ];
 
   useEffect(() => {
     api.get("/leave-types/").then((res) => setTypes(res.data));
@@ -49,6 +65,18 @@ const ApplyLeave = () => {
       const empRes = await api.get(`/employees/${empId}/`);
       const emp = empRes.data;
       setSelectedEmployee(emp);
+
+      // Fetch applied leaves for this employee
+      try {
+        const leavesRes = await api.get(`/leave-apply/?employee=${empId}`);
+        const appliedData = Array.isArray(leavesRes.data)
+          ? leavesRes.data
+          : leavesRes.data.results || [];
+        setAppliedLeaves(appliedData);
+      } catch (err) {
+        console.warn("Could not fetch applied leaves:", err);
+        setAppliedLeaves([]);
+      }
 
       // TODO: Fetch leave balance when endpoint is available
       // const balRes = await api.get(`/leave-balance/?employee=${empId}`);
@@ -86,6 +114,19 @@ const ApplyLeave = () => {
     }
   };
 
+  const getAppliedAndBalance = (leaveTypeId, totalDays) => {
+    // Sum total applied days for this leave type (only approved leaves)
+    const appliedDays = appliedLeaves
+      .filter(
+        (app) =>
+          Number(app.leave_type) === Number(leaveTypeId) && app.status === "A",
+      )
+      .reduce((sum, app) => sum + (Number(app.total_days) || 0), 0);
+
+    const balance = totalDays - appliedDays;
+    return { applied: appliedDays, balance: balance >= 0 ? balance : 0 };
+  };
+
   const applyLeave = async () => {
     if (
       !form.employee ||
@@ -99,14 +140,29 @@ const ApplyLeave = () => {
 
     try {
       setLoading(true);
-      await api.post("/leave-apply/", {
-        ...form,
-        total_days: calculateTotalDays(),
-      });
+      const totalDays = calculateTotalDays();
+      const rejoinDate = new Date(form.end_date);
+      rejoinDate.setDate(rejoinDate.getDate() + 1);
+
+      const payload = {
+        employee: parseInt(form.employee),
+        leave_type: parseInt(form.leave_type),
+        application_for: form.application_for,
+        start_date: form.start_date,
+        end_date: form.end_date,
+        rejoin_after_leave: rejoinDate.toISOString().split("T")[0],
+        total_days: parseFloat(totalDays).toFixed(2),
+        reason: form.reason || "",
+      };
+
+      console.log("Sending payload:", payload);
+
+      await api.post("/leave-apply/", payload);
       alert("Leave Applied Successfully");
       setForm({
         employee: "",
         leave_type: "",
+        application_for: "",
         start_date: "",
         end_date: "",
         rejoin_date: "",
@@ -114,9 +170,18 @@ const ApplyLeave = () => {
       });
       setSelectedEmployee(null);
       setEmployeeLeaveBalance(null);
+      setAppliedLeaves([]);
+
+      // Navigate to Leave List page
+      navigate("/leave/history");
     } catch (err) {
       console.error("Error applying leave:", err);
-      alert("Failed to apply leave");
+      console.error("Response data:", err.response?.data);
+      const errorMessage =
+        err.response?.data?.detail ||
+        JSON.stringify(err.response?.data) ||
+        err.message;
+      alert("Failed to apply leave: " + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -187,11 +252,29 @@ const ApplyLeave = () => {
               onChange={(e) => setForm({ ...form, leave_type: e.target.value })}
             >
               <option value="">Select Leave Type</option>
-              {types.map((t) => (
+              {leaveTypes.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Application For */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">
+              Application For
+            </label>
+            <select
+              className="border p-2 w-full rounded text-sm"
+              value={form.application_for}
+              onChange={(e) =>
+                setForm({ ...form, application_for: e.target.value })
+              }
+            >
+              <option value="">Select</option>
+              <option value="Advance Leave">Advance Leave</option>
+              <option value="Absent Leave">Absent Leave</option>
             </select>
           </div>
 
@@ -244,14 +327,13 @@ const ApplyLeave = () => {
               readOnly
             />
           </div>
-
           {/* Reason */}
-          <div className="col-span-2">
+          <div>
             <label className="block text-sm font-semibold mb-1">Reason</label>
             <textarea
               className="border p-2 w-full rounded text-sm"
               placeholder="Enter reason for leave"
-              rows="3"
+              rows="1"
               value={form.reason}
               onChange={(e) => setForm({ ...form, reason: e.target.value })}
             />
@@ -303,22 +385,242 @@ const ApplyLeave = () => {
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-lg font-semibold mb-4">Leave Summary</h2>
             {getEmployeeLeaveSettings().length > 0 ? (
-              <div className="space-y-3 text-sm">
+              <div className="space-y-3">
                 {getEmployeeLeaveSettings().map((setting, idx) => (
                   <div key={idx} className="border-b pb-3">
                     <div className="font-semibold text-blue-600 mb-2">
                       {setting.leave_year}
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>Casual: {setting.casual_leave_days}</div>
-                      <div>Sick: {setting.sick_leave_days}</div>
-                      <div>Earned: {setting.earned_leave_days}</div>
-                      <div>Maternity: {setting.maternity_leave_days}</div>
-                      <div>Paternity: {setting.paternity_leave_days}</div>
-                      <div>Funeral: {setting.funeral_leave_days}</div>
-                      <div>Compensatory: {setting.compensatory_leave_days}</div>
-                      <div>Unpaid: {setting.unpaid_leave_days}</div>
-                    </div>
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-gray-100 border-b">
+                          <th className="text-left p-1 font-semibold">
+                            Leave Type
+                          </th>
+                          <th className="text-center p-1 font-semibold">
+                            Allotted
+                          </th>
+                          <th className="text-center p-1 font-semibold">
+                            Applied
+                          </th>
+                          <th className="text-center p-1 font-semibold">
+                            Balance
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="p-1">Casual</td>
+                          <td className="text-center p-1">
+                            {setting.casual_leave_days}
+                          </td>
+                          <td className="text-center p-1">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "casual",
+                                )?.id || 1,
+                                setting.casual_leave_days,
+                              ).applied
+                            }
+                          </td>
+                          <td className="text-center p-1 font-semibold text-blue-600">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "casual",
+                                )?.id || 1,
+                                setting.casual_leave_days,
+                              ).balance
+                            }
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-1">Sick</td>
+                          <td className="text-center p-1">
+                            {setting.sick_leave_days}
+                          </td>
+                          <td className="text-center p-1">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "sick",
+                                )?.id || 2,
+                                setting.sick_leave_days,
+                              ).applied
+                            }
+                          </td>
+                          <td className="text-center p-1 font-semibold text-blue-600">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "sick",
+                                )?.id || 2,
+                                setting.sick_leave_days,
+                              ).balance
+                            }
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-1">Earned</td>
+                          <td className="text-center p-1">
+                            {setting.earned_leave_days}
+                          </td>
+                          <td className="text-center p-1">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "earned",
+                                )?.id || 3,
+                                setting.earned_leave_days,
+                              ).applied
+                            }
+                          </td>
+                          <td className="text-center p-1 font-semibold text-blue-600">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "earned",
+                                )?.id || 3,
+                                setting.earned_leave_days,
+                              ).balance
+                            }
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-1">Maternity</td>
+                          <td className="text-center p-1">
+                            {setting.maternity_leave_days}
+                          </td>
+                          <td className="text-center p-1">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "maternity",
+                                )?.id || 4,
+                                setting.maternity_leave_days,
+                              ).applied
+                            }
+                          </td>
+                          <td className="text-center p-1 font-semibold text-blue-600">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "maternity",
+                                )?.id || 4,
+                                setting.maternity_leave_days,
+                              ).balance
+                            }
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-1">Paternity</td>
+                          <td className="text-center p-1">
+                            {setting.paternity_leave_days}
+                          </td>
+                          <td className="text-center p-1">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "paternity",
+                                )?.id || 5,
+                                setting.paternity_leave_days,
+                              ).applied
+                            }
+                          </td>
+                          <td className="text-center p-1 font-semibold text-blue-600">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "paternity",
+                                )?.id || 5,
+                                setting.paternity_leave_days,
+                              ).balance
+                            }
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-1">Funeral</td>
+                          <td className="text-center p-1">
+                            {setting.funeral_leave_days}
+                          </td>
+                          <td className="text-center p-1">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "funeral",
+                                )?.id || 6,
+                                setting.funeral_leave_days,
+                              ).applied
+                            }
+                          </td>
+                          <td className="text-center p-1 font-semibold text-blue-600">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "funeral",
+                                )?.id || 6,
+                                setting.funeral_leave_days,
+                              ).balance
+                            }
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-1">Compensatory</td>
+                          <td className="text-center p-1">
+                            {setting.compensatory_leave_days}
+                          </td>
+                          <td className="text-center p-1">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) =>
+                                    t.name.toLowerCase() === "compensatory",
+                                )?.id || 7,
+                                setting.compensatory_leave_days,
+                              ).applied
+                            }
+                          </td>
+                          <td className="text-center p-1 font-semibold text-blue-600">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) =>
+                                    t.name.toLowerCase() === "compensatory",
+                                )?.id || 7,
+                                setting.compensatory_leave_days,
+                              ).balance
+                            }
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="p-1">Unpaid</td>
+                          <td className="text-center p-1">
+                            {setting.unpaid_leave_days}
+                          </td>
+                          <td className="text-center p-1">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "unpaid",
+                                )?.id || 8,
+                                setting.unpaid_leave_days,
+                              ).applied
+                            }
+                          </td>
+                          <td className="text-center p-1 font-semibold text-blue-600">
+                            {
+                              getAppliedAndBalance(
+                                types.find(
+                                  (t) => t.name.toLowerCase() === "unpaid",
+                                )?.id || 8,
+                                setting.unpaid_leave_days,
+                              ).balance
+                            }
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 ))}
               </div>

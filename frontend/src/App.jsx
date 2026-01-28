@@ -161,14 +161,8 @@ function App() {
           element={<EmployeeCategory />}
         />
         {/* Other Settings */}
-        <Route
-          path="/settings/ot-eligibility"
-          element={<OT_Eligibility />}
-        />
-        <Route
-          path="/settings/leave-settings"
-          element={<Leave_Settings />}
-        />
+        <Route path="/settings/ot-eligibility" element={<OT_Eligibility />} />
+        <Route path="/settings/leave-settings" element={<Leave_Settings />} />
 
         {/* Designation */}
         <Route path="/settings/designations" element={<DesignationEntry />} />
