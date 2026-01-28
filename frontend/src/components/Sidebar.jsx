@@ -150,6 +150,7 @@ const Sidebar = () => {
       children: [
         { label: "Employee Category", path: "/settings/employee-categories" },
         { label: "OT Eligibility", path: "/settings/ot-eligibility" },
+        { label: "Leave Setting", path: "/settings/leave-settings" },
       ],
     },
 

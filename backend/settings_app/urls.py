@@ -4,6 +4,7 @@ from .views import (
     DesignationViewSet,
     GroupViewSet,
     BankViewSet,
+    LeaveSettingViewSet,
     SalarySettingViewSet,
     PFSettingViewSet,
     OTEligibilitySettingViewSet,
@@ -28,6 +29,7 @@ router.register(r"salary-settings", SalarySettingViewSet)
 router.register(r"pf-settings", PFSettingViewSet)
 router.register(r"employee-categories", EmployeeCategoryViewSet)
 router.register(r"ot-eligibility-settings", OTEligibilitySettingViewSet)
+router.register(r"leave-settings", LeaveSettingViewSet)
 router.register(r"companies", CompanyViewSet)
 router.register("units", UnitViewSet)
 router.register("divisions", DivisionViewSet, basename="division")

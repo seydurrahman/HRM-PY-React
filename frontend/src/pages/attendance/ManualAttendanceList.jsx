@@ -4,7 +4,8 @@ import api from "../../lib/api";
 const ManualAttendanceList = () => {
   const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [dateFilter, setDateFilter] = useState("");
+  const [dateFilterFrom, setDateFilterFrom] = useState("");
+  const [dateFilterTo, setDateFilterTo] = useState("");
   const [employeeFilter, setEmployeeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [employees, setEmployees] = useState([]);
@@ -30,13 +31,15 @@ const ManualAttendanceList = () => {
     }
   };
 
-  const loadAttendances = async (date = "", employeeId = "", status = "") => {
+  const loadAttendances = async (
+    dateFrom = "",
+    dateTo = "",
+    employeeId = "",
+    status = "",
+  ) => {
     setLoading(true);
     try {
       let url = "/attendance/?is_manual=true";
-      if (date) {
-        url += `&date=${date}`;
-      }
       if (employeeId) {
         url += `&employee=${employeeId}`;
       }
@@ -48,6 +51,18 @@ const ManualAttendanceList = () => {
       let manualAttendances = attendanceData.filter(
         (att) => att.is_manual === true,
       );
+
+      // Apply date range filter
+      if (dateFrom) {
+        manualAttendances = manualAttendances.filter(
+          (att) => new Date(att.date) >= new Date(dateFrom),
+        );
+      }
+      if (dateTo) {
+        manualAttendances = manualAttendances.filter(
+          (att) => new Date(att.date) <= new Date(dateTo),
+        );
+      }
 
       // Apply status filter including below 8 hours as absent
       if (status) {
@@ -79,11 +94,12 @@ const ManualAttendanceList = () => {
     }
   };
 
-  const handleFilterChange = (date, employeeId, status) => {
-    setDateFilter(date);
+  const handleFilterChange = (dateFrom, dateTo, employeeId, status) => {
+    setDateFilterFrom(dateFrom);
+    setDateFilterTo(dateTo);
     setEmployeeFilter(employeeId);
     setStatusFilter(status);
-    loadAttendances(date, employeeId, status);
+    loadAttendances(dateFrom, dateTo, employeeId, status);
   };
 
   const handleDelete = async (id) => {
@@ -94,7 +110,12 @@ const ManualAttendanceList = () => {
     }
     try {
       await api.delete(`/attendance/${id}/`);
-      loadAttendances(dateFilter, employeeFilter, statusFilter);
+      loadAttendances(
+        dateFilterFrom,
+        dateFilterTo,
+        employeeFilter,
+        statusFilter,
+      );
       alert("Attendance record deleted successfully");
     } catch (err) {
       console.error("Error deleting attendance:", err);
@@ -154,7 +175,12 @@ const ManualAttendanceList = () => {
         status: editCalculatedData.status || editForm.status,
       });
       setEditingId(null);
-      loadAttendances(dateFilter, employeeFilter, statusFilter);
+      loadAttendances(
+        dateFilterFrom,
+        dateFilterTo,
+        employeeFilter,
+        statusFilter,
+      );
       alert("Attendance record updated successfully");
     } catch (err) {
       console.error("Error updating attendance:", err);
@@ -208,17 +234,39 @@ const ManualAttendanceList = () => {
 
       {/* Filters */}
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-semibold mb-2">
-              Filter by Date
+              From Date
             </label>
             <input
               type="date"
               className="border border-gray-300 p-2 rounded w-full"
-              value={dateFilter}
+              value={dateFilterFrom}
               onChange={(e) =>
-                handleFilterChange(e.target.value, employeeFilter, statusFilter)
+                handleFilterChange(
+                  e.target.value,
+                  dateFilterTo,
+                  employeeFilter,
+                  statusFilter,
+                )
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">To Date</label>
+            <input
+              type="date"
+              className="border border-gray-300 p-2 rounded w-full"
+              value={dateFilterTo}
+              onChange={(e) =>
+                handleFilterChange(
+                  dateFilterFrom,
+                  e.target.value,
+                  employeeFilter,
+                  statusFilter,
+                )
               }
             />
           </div>
@@ -231,7 +279,12 @@ const ManualAttendanceList = () => {
               className="border border-gray-300 p-2 rounded w-full"
               value={employeeFilter}
               onChange={(e) =>
-                handleFilterChange(dateFilter, e.target.value, statusFilter)
+                handleFilterChange(
+                  dateFilterFrom,
+                  dateFilterTo,
+                  e.target.value,
+                  statusFilter,
+                )
               }
             >
               <option value="">All Employees</option>
@@ -251,7 +304,12 @@ const ManualAttendanceList = () => {
               className="border border-gray-300 p-2 rounded w-full"
               value={statusFilter}
               onChange={(e) =>
-                handleFilterChange(dateFilter, employeeFilter, e.target.value)
+                handleFilterChange(
+                  dateFilterFrom,
+                  dateFilterTo,
+                  employeeFilter,
+                  e.target.value,
+                )
               }
             >
               <option value="">All Status</option>
@@ -265,7 +323,7 @@ const ManualAttendanceList = () => {
         </div>
 
         <button
-          onClick={() => handleFilterChange("", "", "")}
+          onClick={() => handleFilterChange("", "", "", "")}
           className="mt-4 px-4 py-2 text-sm bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
         >
           Clear Filters

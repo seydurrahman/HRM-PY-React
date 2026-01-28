@@ -17,6 +17,7 @@ from .models import (
     SalarySetting,
     PFSetting,
     EmployeeCategory,
+    LeaveSettings,
 )
 
 # Organization hierarchy
@@ -177,7 +178,38 @@ class EmployeeCategorySerializer(serializers.ModelSerializer):
         model = EmployeeCategory
         fields = "__all__"
 
+
 class OTEligibilitySettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTEligibilitySetting
         fields = "__all__"
+
+
+class LeaveSettingSerializer(serializers.ModelSerializer):
+    employee_category_name = serializers.CharField(
+        source="employee_category.name", read_only=True
+    )
+    designation_name = serializers.CharField(source="designation.name", read_only=True)
+
+    class Meta:
+        model = LeaveSettings
+        fields = [
+            "id",
+            "leave_year",
+            "employee_category",
+            "employee_category_name",
+            "designation",
+            "designation_name",
+            "casual_leave_days",
+            "sick_leave_days",
+            "earned_leave_days",
+            "maternity_leave_days",
+            "paternity_leave_days",
+            "funeral_leave_days",
+            "compensatory_leave_days",
+            "unpaid_leave_days",
+            "carry_forward",
+            "next_year_adjustment",
+            "sandwitch_leave",
+        ]
+        read_only_fields = ["id", "employee_category_name", "designation_name"]

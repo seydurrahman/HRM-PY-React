@@ -69,6 +69,7 @@ import EmployeeCategory from "./pages/other-settings/EmployeeCategory.jsx";
 
 // Other Settings
 import OT_Eligibility from "./pages/other-settings/OT_Eligibility.jsx";
+import Leave_Settings from "./pages/other-settings/Leave_Settings.jsx";
 
 // Designation
 import DesignationEntry from "./pages/organization/DesignationEntry.jsx";
@@ -163,6 +164,10 @@ function App() {
         <Route
           path="/settings/ot-eligibility"
           element={<OT_Eligibility />}
+        />
+        <Route
+          path="/settings/leave-settings"
+          element={<Leave_Settings />}
         />
 
         {/* Designation */}

@@ -112,6 +112,7 @@ class Grade(models.Model):
     def __str__(self):
         return self.name
 
+
 class EmployeeCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
@@ -160,7 +161,7 @@ class PFSetting(models.Model):
     is_active = models.BooleanField(default=True)
     employee_percent = models.DecimalField(max_digits=5, decimal_places=2)  # e.g. 8.00
     employer_percent = models.DecimalField(max_digits=5, decimal_places=2)
-    
+
 
 class OTEligibilitySetting(models.Model):
     employee_category = models.ForeignKey("EmployeeCategory", on_delete=models.CASCADE)
@@ -175,3 +176,26 @@ class OTEligibilitySetting(models.Model):
 
     def __str__(self):
         return f"OT Eligibility for {self.designation.name} in {self.employee_category.name}: {'Eligible' if self.is_eligible else 'Not Eligible'}"
+
+
+class LeaveSettings(models.Model):
+    leave_year = models.PositiveIntegerField(default=2024)
+    employee_category = models.ForeignKey("EmployeeCategory", on_delete=models.CASCADE)
+    designation = models.ForeignKey("Designation", on_delete=models.CASCADE)
+    casual_leave_days = models.PositiveIntegerField(default=0)
+    sick_leave_days = models.PositiveIntegerField(default=0)
+    earned_leave_days = models.PositiveIntegerField(default=0)
+    maternity_leave_days = models.PositiveIntegerField(default=0)
+    paternity_leave_days = models.PositiveIntegerField(default=0)
+    funeral_leave_days = models.PositiveIntegerField(default=0)
+    compensatory_leave_days = models.PositiveIntegerField(default=0)
+    unpaid_leave_days = models.PositiveIntegerField(default=0)
+    carry_forward = models.BooleanField(default=False)
+    next_year_adjustment = models.BooleanField(default=False)
+    sandwitch_leave = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("leave_year", "employee_category", "designation")
+
+    def __str__(self):
+        return f"Leave Settings for {self.designation.name} ({self.employee_category.name}) - {self.leave_year}"

@@ -18,7 +18,8 @@ const BulkManualAttendance = () => {
   });
 
   const [formData, setFormData] = useState({
-    date: "",
+    from_date: "",
+    to_date: "",
     in_time: "",
     out_time: "",
     status: "P",
@@ -178,8 +179,12 @@ const BulkManualAttendance = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.date || selectedEmployees.length === 0) {
-      alert("Please select date and at least one employee");
+    if (
+      !formData.from_date ||
+      !formData.to_date ||
+      selectedEmployees.length === 0
+    ) {
+      alert("Please select date range and at least one employee");
       return;
     }
 
@@ -190,16 +195,36 @@ const BulkManualAttendance = () => {
 
     setLoading(true);
     try {
-      const attendanceRecords = selectedEmployees.map((employeeId) => ({
-        employee: employeeId,
-        date: formData.date,
-        in_time: formData.in_time,
-        out_time: formData.out_time,
-        work_hours: parseFloat(calculatedData.work_hours) || 0,
-        ot_hours: parseFloat(calculatedData.ot_hours) || 0,
-        status: calculatedData.status || "P",
-        is_manual: true,
-      }));
+      // Generate date range
+      const startDate = new Date(formData.from_date);
+      const endDate = new Date(formData.to_date);
+      const dates = [];
+
+      for (
+        let d = new Date(startDate);
+        d <= endDate;
+        d.setDate(d.getDate() + 1)
+      ) {
+        dates.push(new Date(d).toISOString().split("T")[0]);
+      }
+
+      const attendanceRecords = [];
+
+      // Create attendance records for each date and selected employee
+      for (const date of dates) {
+        for (const employeeId of selectedEmployees) {
+          attendanceRecords.push({
+            employee: employeeId,
+            date: date,
+            in_time: formData.in_time,
+            out_time: formData.out_time,
+            work_hours: parseFloat(calculatedData.work_hours) || 0,
+            ot_hours: parseFloat(calculatedData.ot_hours) || 0,
+            status: calculatedData.status || "P",
+            is_manual: true,
+          });
+        }
+      }
 
       // Submit all records
       for (const record of attendanceRecords) {
@@ -207,12 +232,13 @@ const BulkManualAttendance = () => {
       }
 
       alert(
-        `Attendance saved successfully for ${selectedEmployees.length} employee(s)`,
+        `Attendance saved successfully for ${selectedEmployees.length} employee(s) for ${dates.length} day(s)`,
       );
 
       // Reset form
       setFormData({
-        date: "",
+        from_date: "",
+        to_date: "",
         in_time: "",
         out_time: "",
         status: "P",
@@ -393,8 +419,6 @@ const BulkManualAttendance = () => {
         )}
       </div>
 
-      
-
       {/* Employee Selection */}
       <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
         <div className="flex justify-between items-center">
@@ -456,15 +480,29 @@ const BulkManualAttendance = () => {
       <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
         <h3 className="font-semibold">Attendance Details</h3>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-semibold mb-2">Date</label>
+            <label className="block text-sm font-semibold mb-2">
+              From Date
+            </label>
             <input
               type="date"
               className="border border-gray-300 p-2 rounded w-full"
-              value={formData.date}
+              value={formData.from_date}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, date: e.target.value }))
+                setFormData((prev) => ({ ...prev, from_date: e.target.value }))
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">To Date</label>
+            <input
+              type="date"
+              className="border border-gray-300 p-2 rounded w-full"
+              value={formData.to_date}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, to_date: e.target.value }))
               }
             />
           </div>

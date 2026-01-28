@@ -38,6 +38,8 @@ class LeaveApplication(models.Model):
     leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
     start_date = models.DateField()
     end_date = models.DateField()
+    rejoin_after_leave = models.DateField(null=True, blank=True)
+    application_for = models.CharField(max_length=50, blank=True)
     total_days = models.DecimalField(max_digits=5, decimal_places=2)
     reason = models.TextField(blank=True)
 

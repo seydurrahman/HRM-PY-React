@@ -1,9 +1,11 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 # Remove: from rest_framework.viewsets import ReadOnlyModelViewSet
 from .models import (
     Company,
+    LeaveSettings,
     Unit,
     Division,
     Department,
@@ -23,6 +25,7 @@ from .models import (
 )
 from .serializers import (
     CompanySerializer,
+    LeaveSettingSerializer,
     OTEligibilitySettingSerializer,
     UnitSerializer,
     DivisionSerializer,
@@ -214,3 +217,43 @@ class OTEligibilitySettingViewSet(viewsets.ModelViewSet):
     queryset = OTEligibilitySetting.objects.all()
     serializer_class = OTEligibilitySettingSerializer
     permission_classes = [IsAuthenticated]
+
+
+class LeaveSettingViewSet(viewsets.ModelViewSet):
+    queryset = LeaveSettings.objects.all()
+    serializer_class = LeaveSettingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        print("DEBUG: List called")
+        print(f"DEBUG: Total records: {self.queryset.count()}")
+        response = super().list(request, *args, **kwargs)
+        print(f"DEBUG: Response data: {response.data}")
+        return response
+
+    def create(self, request, *args, **kwargs):
+        print("DEBUG: Received data:", request.data)
+
+        # Get the data
+        data = request.data.copy()
+
+        # Check if record already exists
+        leave_year = data.get("leave_year")
+        employee_category = data.get("employee_category")
+        designation = data.get("designation")
+
+        existing = LeaveSettings.objects.filter(
+            leave_year=leave_year,
+            employee_category=employee_category,
+            designation=designation,
+        ).first()
+
+        if existing:
+            # Update existing record
+            serializer = self.get_serializer(existing, data=data, partial=False)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # Create new record
+            return super().create(request, *args, **kwargs)
