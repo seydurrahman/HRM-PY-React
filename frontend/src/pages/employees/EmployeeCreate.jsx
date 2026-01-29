@@ -2905,8 +2905,8 @@ const EmployeeCreate = () => {
                   onChange={handleChange}
                 >
                   <option value="PER">Permanent</option>
-                  <option value="CON">Contract</option>
-                  <option value="TMP">Temporary</option>
+                  <option value="TMP">Probitional</option>
+                  <option value="CON">Contractual</option>
                 </select>
               </div>
 

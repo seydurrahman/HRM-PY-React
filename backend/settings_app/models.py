@@ -179,7 +179,16 @@ class OTEligibilitySetting(models.Model):
 
 
 class LeaveSettings(models.Model):
+    EMPLOYEE_TYPE_CHOICES = (
+        ("PER", "Permanent"),
+        ("PRB", "Probational"),
+        ("CON", "Contractual"),
+    )
+
     leave_year = models.PositiveIntegerField(default=2024)
+    employee_type = models.CharField(
+        max_length=3, choices=EMPLOYEE_TYPE_CHOICES, default="PER"
+    )
     employee_category = models.ForeignKey("EmployeeCategory", on_delete=models.CASCADE)
     designation = models.ForeignKey("Designation", on_delete=models.CASCADE)
     casual_leave_days = models.PositiveIntegerField(default=0)
@@ -195,7 +204,12 @@ class LeaveSettings(models.Model):
     sandwitch_leave = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ("leave_year", "employee_category", "designation")
+        unique_together = (
+            "leave_year",
+            "employee_type",
+            "employee_category",
+            "designation",
+        )
 
     def __str__(self):
-        return f"Leave Settings for {self.designation.name} ({self.employee_category.name}) - {self.leave_year}"
+        return f"Leave Settings for {self.get_employee_type_display()} {self.designation.name} ({self.employee_category.name}) - {self.leave_year}"

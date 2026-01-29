@@ -12,6 +12,7 @@ const LeaveSettingsForm = () => {
 
   const [form, setForm] = useState({
     leave_year: new Date().getFullYear(),
+    employee_type: "PER",
     categoryType: "single", // 'single' or 'all'
     employee_category: "",
     designationType: "single", // 'single' or 'all'
@@ -62,6 +63,7 @@ const LeaveSettingsForm = () => {
     setEditingId(setting.id);
     setForm({
       leave_year: setting.leave_year,
+      employee_type: setting.employee_type || "PER",
       categoryType: "single",
       employee_category: String(setting.employee_category) || "",
       designationType: "single",
@@ -85,6 +87,7 @@ const LeaveSettingsForm = () => {
     setEditingId(null);
     setForm({
       leave_year: new Date().getFullYear(),
+      employee_type: "PER",
       categoryType: "single",
       employee_category: "",
       designationType: "single",
@@ -244,6 +247,10 @@ const LeaveSettingsForm = () => {
       // If editing a single setting, update it
       if (editingId) {
         const payload = {
+          leave_year: parseInt(form.leave_year),
+          employee_type: form.employee_type,
+          employee_category: parseInt(form.employee_category),
+          designation: parseInt(form.designation),
           casual_leave_days: parseInt(form.casual_leave_days) || 0,
           sick_leave_days: parseInt(form.sick_leave_days) || 0,
           earned_leave_days: parseInt(form.earned_leave_days) || 0,
@@ -255,9 +262,6 @@ const LeaveSettingsForm = () => {
           carry_forward: form.carry_forward === true,
           next_year_adjustment: form.next_year_adjustment === true,
           sandwitch_leave: form.sandwitch_leave === true,
-          leave_year: parseInt(form.leave_year),
-          employee_category: parseInt(form.employee_category),
-          designation: parseInt(form.designation),
         };
         try {
           const res = await api.put(
@@ -323,6 +327,7 @@ const LeaveSettingsForm = () => {
         carry_forward: form.carry_forward === true,
         next_year_adjustment: form.next_year_adjustment === true,
         sandwitch_leave: form.sandwitch_leave === true,
+        employee_type: form.employee_type,
       };
 
       let successCount = 0;
@@ -357,6 +362,7 @@ const LeaveSettingsForm = () => {
         // Reset form
         setForm({
           leave_year: new Date().getFullYear(),
+          employee_type: "PER",
           categoryType: "single",
           employee_category: "",
           designationType: "single",
@@ -396,7 +402,7 @@ const LeaveSettingsForm = () => {
           <div className="border rounded p-4 bg-gray-50">
             {/* Year, Category, Designation - Side by Side */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 {/* Year */}
                 <div>
                   <label className="block mb-1 font-semibold text-sm">
@@ -412,6 +418,26 @@ const LeaveSettingsForm = () => {
                     onChange={handleChange}
                     className="border p-2 rounded w-full text-sm"
                   />
+                </div>
+
+                {/* Employee Type */}
+                <div>
+                  <label className="block mb-1 font-semibold text-sm">
+                    Employee
+                  </label>
+                  <label className="block mb-1 font-semibold text-sm">
+                    Type
+                  </label>
+                  <select
+                    name="employee_type"
+                    value={form.employee_type}
+                    onChange={handleChange}
+                    className="border p-2 rounded w-full text-sm"
+                  >
+                    <option value="PER">Permanent</option>
+                    <option value="PRB">Probational</option>
+                    <option value="CON">Contractual</option>
+                  </select>
                 </div>
 
                 {/* Employee Category Section */}
@@ -660,7 +686,7 @@ const LeaveSettingsForm = () => {
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="border p-2 text-left">Year</th>
+                    <th className="border p-2 text-left">Employee Type</th>
                     <th className="border p-2 text-left">Category</th>
                     <th className="border p-2 text-left">Designation</th>
                     <th className="border p-2 text-center">CL</th>
@@ -680,7 +706,15 @@ const LeaveSettingsForm = () => {
                 <tbody>
                   {leaveSettings.map((setting) => (
                     <tr key={setting.id} className="hover:bg-gray-50">
-                      <td className="border p-2">{setting.leave_year}</td>
+                      <td className="border p-2">
+                        {setting.employee_type === "PER"
+                          ? "Permanent"
+                          : setting.employee_type === "PRB"
+                            ? "Probational"
+                            : setting.employee_type === "CON"
+                              ? "Contractual"
+                              : setting.employee_type}
+                      </td>
                       <td className="border p-2">
                         {setting.employee_category_name || "N/A"}
                       </td>

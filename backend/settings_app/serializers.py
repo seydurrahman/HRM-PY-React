@@ -196,6 +196,7 @@ class LeaveSettingSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "leave_year",
+            "employee_type",
             "employee_category",
             "employee_category_name",
             "designation",
